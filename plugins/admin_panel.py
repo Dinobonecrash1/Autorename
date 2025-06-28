@@ -33,9 +33,8 @@ async def tutorial(bot, message):
     await message.reply_text(
         text=Txt.FILE_NAME_TXT.format(format_template=format_template),
         disable_web_page_preview=True,
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("•Sᴜᴘᴘᴏʀᴛ•", url="https://t.me/BOTSKINGDOMSGROUP"), InlineKeyboardButton("•⚡Main hub•", url="https://t.me/botskingdoms")]
-        ])
+        reply_markup=InlineKeyboardMarkup([InlineKeyboardButton("•⚡Main hub•", url="https://t.me/botskingdoms")]
+        )
     )
 
 @Client.on_message(filters.command(["stats", "status"]) & filters.user(Config.ADMIN))
