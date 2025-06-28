@@ -25,6 +25,17 @@ def detect_quality(file_name):
     match = re.search(r"(480p|720p|1080p)", file_name)
     return quality_order.get(match.group(1), 4) if match else 4  # Default priority = 4
 
+def extract_season_number(filename):
+    patterns = [
+        re.compile(r"S(\d+)", re.IGNORECASE),
+        re.compile(r"Season[_\s-]?(\d+)", re.IGNORECASE),
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, filename)
+        if match:
+            return int(match.group(1))
+    return 1  # Default to season 1 if not found
+
 def extract_episode_number(filename):
     """Extract episode number from filename for sorting"""
     pattern1 = re.compile(r'S(\d+)(?:E|EP)(\d+)')
@@ -177,6 +188,41 @@ def extract_quality(filename):
         return "4kx265"
     return "Unknown"
 
+async def get_audio_track_type(file_path):
+    ffprobe_cmd = shutil.which('ffprobe')
+    if not ffprobe_cmd:
+        return "Unknown"
+
+    command = [
+        ffprobe_cmd,
+        "-v", "error",
+        "-select_streams", "a",
+        "-show_entries", "stream=index",
+        "-of", "csv=p=0",
+        file_path
+    ]
+
+    try:
+        process = await asyncio.create_subprocess_exec(
+            *command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, _ = await process.communicate()
+        audio_tracks = stdout.decode().strip().splitlines()
+        count = len(audio_tracks)
+
+        if count == 1:
+            return "Single Audio"
+        elif count == 2:
+            return "Dual Audio"
+        elif count >= 3:
+            return "Multi Audio"
+        return "Unknown"
+    except Exception as e:
+        print(f"Audio detection error: {e}")
+        return "Unknown"
+
 async def process_thumb(ph_path):
     # Offload PIL image work to a thread for real concurrency
     def _resize_thumb(path):
@@ -272,13 +318,17 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
         renaming_operations[file_id] = datetime.now()
 
         episode_number = extract_episode_number(file_name)
-        print(f"Extracted Episode Number: {episode_number}")
+        season_number = extract_season_number(file_name)
+        print(f"Extracted Season: {season_number}, Episode: {episode_number}")
 
         template = format_template
         if episode_number:
             placeholders = ["episode", "Episode", "EPISODE", "{episode}"]
             for placeholder in placeholders:
                 template = template.replace(placeholder, str(episode_number), 1)
+            season_placeholders = ["season", "Season", "SEASON", "{season}"]
+            for season_placeholder in season_placeholders:
+                template = template.replace(season_placeholder, f"{season_number:02d}", 1)
             quality_placeholders = ["quality", "Quality", "QUALITY", "{quality}"]
             for quality_placeholder in quality_placeholders:
                 if quality_placeholder in template:
@@ -293,6 +343,10 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                         return
                     template = template.replace(quality_placeholder, "".join(extracted_qualities))
 
+                #Audio detection her
+                audio_type = await get_audio_track_type(path)
+                template = template.replace("{audio}", audio_type)
+              #continue with renaming
         _, file_extension = os.path.splitext(file_name)
         renamed_file_name = f"{template}{file_extension}"
         renamed_file_path = f"downloads/{renamed_file_name}"
