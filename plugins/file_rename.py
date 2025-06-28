@@ -342,11 +342,8 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                         del renaming_operations[file_id]
                         return
                     template = template.replace(quality_placeholder, "".join(extracted_qualities))
-                #safe to use path now
-                path = metadata_file_path
-                #Audio detection her
-                audio_type = await get_audio_track_type(path)
-                template = template.replace("{audio}", audio_type)
+               
+                
               #continue with renaming
         _, file_extension = os.path.splitext(file_name)
         renamed_file_name = f"{template}{file_extension}"
@@ -404,7 +401,10 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                 return
 
             path = metadata_file_path
-
+             # audio add path 
+            audio_type = await get_audio_track_type(path)
+            template = template.replace("{audio}", audio_type)
+            
             upload_msg = await download_msg.edit("Wᴇᴡ... Iᴀᴍ Uᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
 
             c_caption = await codeflixbots.get_caption(message.chat.id)
