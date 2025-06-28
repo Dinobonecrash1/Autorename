@@ -38,11 +38,19 @@ def extract_season_number(filename):
     
 import re
 
+import re
+
 def extract_audio_type(filename: str) -> str:
     if not filename or not isinstance(filename, str):
         return "Unknown"
     
     lower = filename.lower()
+    
+    # Check for explicit "Multi Audio" or "Dual Audio" in the filename
+    if "multi audio" in lower:
+        return "Multi Audio"
+    if "dual audio" in lower:
+        return "Dual Audio"
     
     # List of specific languages to check
     specific_languages = {'japanese', 'english', 'hindi', 'tamil', 'telugu'}
@@ -63,7 +71,7 @@ def extract_audio_type(filename: str) -> str:
     elif lang_count == 1:
         return "Single Audio"
     
-    # Fallback to original logic: check for languages inside curly braces
+    # Fallback to checking languages inside curly braces
     match = re.search(r"\{([^\}]*)\}", lower)
     if not match or not match.group(1).strip():
         return "Unknown"
@@ -80,7 +88,7 @@ def extract_audio_type(filename: str) -> str:
         return "Single Audio"
     else:
         return "Unknown"
-
+    
 
 def extract_episode_number(filename):
     """Extract episode number from filename for sorting"""
