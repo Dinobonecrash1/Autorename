@@ -36,46 +36,40 @@ def extract_season_number(filename):
             return int(match.group(1))
     return 1  # Default to season 1 if not found
 
-def extract_audio_type(filename: str) -> str:
-    lower = filename.lower()
+async def get_audio_track_type(file_path):Add commentMore actions
+    ffprobe_cmd = shutil.which('ffprobe')
+    if not ffprobe_cmd:
+        return "Unknown"
 
-    # Match inside { ... }
-    match = re.search(r"\{([^}]+)\}", lower)
-    if match:
-        lang_text = match.group(1)
+    command = [
+        ffprobe_cmd,
+        "-v", "error",
+        "-select_streams", "a",
+        "-show_entries", "stream=index",
+        "-of", "csv=p=0",
+        file_path
+    ]
 
-        # Split by dash or comma or space
-        parts = re.split(r"[-,|]", lang_text)
-        normalized_langs = {
-            "hindi", "eng", "english", "jap", "japanese", "tamil", "telugu",
-            "malayalam", "korean", "french", "german", "bengali", "marathi"
-        }
+    try:
+        process = await asyncio.create_subprocess_exec(
+            *command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, _ = await process.communicate()
+        audio_tracks = stdout.decode().strip().splitlines()
+        count = len(audio_tracks)
 
-        detected = set()
-
-        for part in parts:
-            clean = part.strip().lower()
-            for known in normalized_langs:
-                if known in clean:
-                    detected.add(known)
-                    break
-
-        if len(detected) >= 3:
-            return "Multi Audio"
-        elif len(detected) == 2:
-            return "Dual Audio"
-        elif len(detected) == 1:
+        if count == 1:
             return "Single Audio"
-
-    # Fallbacks
-    if "multi audio" in lower:
-        return "Multi Audio"
-    elif "dual audio" in lower:
-        return "Dual Audio"
-    elif any(lang in lower for lang in ["hindi", "tamil", "telugu", "malayalam", "japanese", "english"]):
-        return "Single Audio"
-
-    return "Single Audio"
+        elif count == 2:
+            return "Dual Audio"
+        elif count >= 3:
+            return "Multi Audio"
+        return "Unknown"
+    except Exception as e:
+        print(f"Audio detection error: {e}")
+        return "Unknown"
 
 def extract_episode_number(filename):
     """Extract episode number from filename for sorting"""
