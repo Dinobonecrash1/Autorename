@@ -39,19 +39,18 @@ def extract_season_number(filename):
 def extract_audio_type(filename: str) -> str:
     lower = filename.lower()
 
-    # Check for common audio markers
-    if "dual audio" in lower or "dual" in lower:
-        return "Dual Audio"
-    elif "multi audio" in lower or "multi" in lower:
+    # Detect based on number of language tags
+    langs = re.findall(r"(hindi|english|japanese|tamil|telugu|malayalam|korean|french|german)", lower)
+    lang_count = len(set(langs))  # unique language mentions
+
+    if "multi audio" in lower or lang_count >= 3:
         return "Multi Audio"
-    elif "triple audio" in lower or "triple" in lower:
-        return "Triple Audio"
-    elif "hindi" in lower and "english" in lower:
+    elif "dual audio" in lower or lang_count == 2:
         return "Dual Audio"
-    elif any(lang in lower for lang in ["hindi", "tamil", "telugu", "malayalam"]):
+    elif lang_count == 1:
         return "Single Audio"
     else:
-        return "Single Audio"  # Default fallback
+        return "Single Audio"
 
 def extract_episode_number(filename):
     """Extract episode number from filename for sorting"""
