@@ -21,14 +21,14 @@ async def not_subscribed(_, client, message):
 @Client.on_message(filters.private & filters.create(not_subscribed))
 async def forces_sub(client, message):
     buttons = [
-        [InlineKeyboardButton(text="•ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ•", url=f"https://t.me/botskingdoms")]
+        [InlineKeyboardButton(text="•ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ•", url=f"https://t.me/Animeworld_zone")]
     ]
     text = "<b>Yᴏᴜ Bᴀᴋᴋᴀᴀ...!! \n<blockquote>Jᴏɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴜsᴇ ᴍʏ\n\nᴏᴛʜᴇʀᴡɪsᴇ Yᴏᴜ ᴀʀᴇ ɪɴ ʙɪɢ sʜɪᴛ...!!</blockquote>\n<blockquote></b>"
     try:
         user = await client.get_chat_member(Config.FORCE_SUB, message.from_user.id)
         if user.status == enums.ChatMemberStatus.BANNED:
             return await client.send_message(message.from_user.id, text="Sorry You Are Banned To Use Me")
-        buttons.append([InlineKeyboardButton(text="Cʟɪᴄᴋ ʜᴇʀᴇ", url=f"https://t.me/bot_kingdoms_auto_renamerbot?start=true")])
+        buttons.append([InlineKeyboardButton(text="Cʟɪᴄᴋ ʜᴇʀᴇ", url=f"https://t.me/Auto_rename_bbot?start=true")])
     except UserNotParticipant:
         if Config.FSUB_PIC:
             await message.reply_photo(
