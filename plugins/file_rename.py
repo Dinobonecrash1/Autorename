@@ -39,29 +39,35 @@ def extract_season_number(filename):
 def extract_audio_type(filename: str) -> str:
     lower = filename.lower()
 
-    # Match inside {curly-braces}
+    # Match inside { ... }
     match = re.search(r"\{([^}]+)\}", lower)
     if match:
         lang_text = match.group(1)
 
-        # Normalize: replace non-alphabetic chars with dash, then split
-        parts = re.split(r"[-,\s]+", lang_text)
-        known_langs = {
-            "hindi", "english", "japanese", "jap", "tamil", "telugu",
-            "malayalam", "korean", "french", "german", "marathi", "bengali"
+        # Split by dash or comma or space
+        parts = re.split(r"[-,|]", lang_text)
+        normalized_langs = {
+            "hindi", "eng", "english", "jap", "japanese", "tamil", "telugu",
+            "malayalam", "korean", "french", "german", "bengali", "marathi"
         }
 
-        detected_langs = {p for p in parts if p.strip() in known_langs}
-        count = len(detected_langs)
+        detected = set()
 
-        if count >= 3:
+        for part in parts:
+            clean = part.strip().lower()
+            for known in normalized_langs:
+                if known in clean:
+                    detected.add(known)
+                    break
+
+        if len(detected) >= 3:
             return "Multi Audio"
-        elif count == 2:
+        elif len(detected) == 2:
             return "Dual Audio"
-        elif count == 1:
+        elif len(detected) == 1:
             return "Single Audio"
 
-    # fallback if not matched
+    # Fallbacks
     if "multi audio" in lower:
         return "Multi Audio"
     elif "dual audio" in lower:
