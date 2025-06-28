@@ -359,7 +359,9 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                         del renaming_operations[file_id]
                         return
                     template = template.replace(quality_placeholder, "".join(extracted_qualities))
-               
+                  # audio add path 
+            audio_type = extract_audio_type(file_name)
+            template = template.replace("{audio}", audio_type)
                 
               #continue with renaming
         _, file_extension = os.path.splitext(file_name)
@@ -418,9 +420,7 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                 return
 
             path = metadata_file_path
-             # audio add path 
-            audio_type = extract_audio_type(file_name)
-            template = template.replace("{audio}", audio_type)
+            
             
             upload_msg = await download_msg.edit("Wᴇᴡ... Iᴀᴍ Uᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
 
