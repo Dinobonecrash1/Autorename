@@ -342,7 +342,8 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                         del renaming_operations[file_id]
                         return
                     template = template.replace(quality_placeholder, "".join(extracted_qualities))
-
+                #safe to use path now
+                path = metadata_file_path
                 #Audio detection her
                 audio_type = await get_audio_track_type(path)
                 template = template.replace("{audio}", audio_type)
