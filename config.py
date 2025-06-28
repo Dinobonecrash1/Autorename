@@ -3,22 +3,23 @@ id_pattern = re.compile(r'^.\d+$')
 
 class Config(object):
     # pyro client config
-    API_ID    = os.environ.get("API_ID", "")
-    API_HASH  = os.environ.get("API_HASH", "")
-    BOT_TOKEN = os.environ.get("BOT_TOKEN", "") 
+    API_ID = os.environ.get("API_ID", "21518327")
+    API_HASH = os.environ.get("API_HASH", "e72f588b3e4763f01eecfc3c4aa7e8ac")
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", "7877612758:AAETBEhLEdTJdruAJBDjQME5KecpPYsErrw") 
 
     # database config
-    DB_NAME = os.environ.get("DB_NAME","madflixbotz")     
-    DB_URL  = os.environ.get("DB_URL","")
+    DB_NAME = os.environ.get("DB_NAME","Autorename")     
+    
+    DB_URL = os.environ.get("DB_URL","mongodb+srv://vinayjaat698:vinayjaat@autorename.6whzjfb.mongodb.net/?retryWrites=true&w=majority&appName=Autorename")
  
     # other configs
     BOT_UPTIME  = time.time()
-    START_PIC   = os.environ.get("START_PIC", "https://graph.org/file/4b306f4b15c23a8f22e58.jpg")
-    ADMIN       = [int(admin) if id_pattern.search(admin) else admin for admin in os.environ.get('ADMIN', '').split()]
+    START_PIC   = os.environ.get("START_PIC", "https://envs.sh/2Gj.jpg")
+    ADMIN       = [int(admin) if id_pattern.search(admin) else admin for admin in os.environ.get('ADMIN', '5741918628').split()]
     FORCE_SUB   = os.environ.get("FORCE_SUB", "") 
-    LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", ""))
+    LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", "-1001839965169"))
     FSUB_PIC = os.environ.get("FSUB_PIC", "")
-    BOT_USERNAME = os.environ.get("BOT_USERNAME", "")
+    BOT_USERNAME = os.environ.get("BOT_USERNAME", "Auto_reanme_bbot")
     # wes response configuration     
     WEBHOOK = bool(os.environ.get("WEBHOOK", "True"))
 
@@ -36,16 +37,16 @@ class Txt(object):
 ➲ ᴇᴘɪꜱᴏᴅᴇ - ᴛᴏ ʀᴇᴘʟᴀᴄᴇ ᴇᴘɪꜱᴏᴅᴇ ɴᴜᴍʙᴇʀ
 ➲ ǫᴜᴀʟɪᴛʏ - ᴛᴏ ʀᴇᴘʟᴀᴄᴇ ǫᴜᴀʟɪᴛʏ
 
-<b>‣ ꜰᴏʀ ᴇx:- </b> <code> /autorename Your Anime Name Here [S01 - EPepisode - [Quality]  [Dual] @Seishiro_atanime </code>
+<b>‣ ꜰᴏʀ ᴇx:- </b> <code> /autorename Your Anime Name Here [S01 - EPepisode - [Quality]  [Dual] @Animeworld_zone </code>
 
 <b>‣ /Autorename: ʀᴇɴᴀᴍᴇ ʏᴏᴜʀ ᴍᴇᴅɪᴀ ꜰɪʟᴇꜱ ʙʏ ɪɴᴄʟᴜᴅɪɴɢ 'ᴇᴘɪꜱᴏᴅᴇ' ᴀɴᴅ 'ǫᴜᴀʟɪᴛʏ' ᴠᴀʀɪᴀʙʟᴇꜱ ɪɴ ʏᴏᴜʀ ᴛᴇxᴛ, ᴛᴏ ᴇxᴛʀᴀᴄᴛ ᴇᴘɪꜱᴏᴅᴇ ᴀɴᴅ ǫᴜᴀʟɪᴛʏ ᴘʀᴇꜱᴇɴᴛ ɪɴ ᴛʜᴇ ᴏʀɪɢɪɴᴀʟ ꜰɪʟᴇɴᴀᴍᴇ. """
     
     ABOUT_TXT = f"""<b>❍ ᴍʏ ɴᴀᴍᴇ : <a href="https://t.me/bot_kingdoms_auto_renamerbot">ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ</a>
-❍ ᴅᴇᴠᴇʟᴏᴩᴇʀ : <a href="https://t.me/seishiro_atanime">Seishiro</a>
+❍ ᴅᴇᴠᴇʟᴏᴩᴇʀ : <a href="https://t.me/V_Sbotmaker">Bot</a>
 ❍ ʟᴀɴɢᴜᴀɢᴇ : <a href="https://www.python.org/">ᴘʏᴛʜᴏɴ</a>
 ❍ ᴅᴀᴛᴀʙᴀꜱᴇ : <a href="https://www.mongodb.com/">ᴍᴏɴɢᴏ ᴅʙ</a>
 ❍ ʜᴏꜱᴛᴇᴅ ᴏɴ : <a href="https://t.me/botskingdoms">error...Not found...</a>
-❍ ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ : <a href="https://t.me/botskingdoms">Bᴏᴛs Kɪɴɢᴅᴏᴍ</a>
+❍ ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ : <a href="https://t.me/Animeworld_zone">ANIME ZONE</a>
 
 ➻ ᴄʟɪᴄᴋ ᴏɴ ᴛʜᴇ ʙᴜᴛᴛᴏɴs ɢɪᴠᴇɴ ʙᴇʟᴏᴡ ғᴏʀ ɢᴇᴛᴛɪɴɢ ʙᴀsɪᴄ ʜᴇʟᴩ ᴀɴᴅ ɪɴғᴏ ᴀʙᴏᴜᴛ ᴍᴇ.</b>"""
 
