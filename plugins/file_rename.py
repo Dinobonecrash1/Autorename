@@ -194,11 +194,24 @@ pattern8 = re.compile(r'[([<{]?\s*HdRip\s*[)\]>}]?|\bHdRip\b', re.IGNORECASE)
 pattern9 = re.compile(r'[([<{]?\s*4kX264\s*[)\]>}]?', re.IGNORECASE)
 pattern10 = re.compile(r'[([<{]?\s*4kx265\s*[)\]>}]?', re.IGNORECASE)
 
-def extract_quality(filename):
-    pattern = re.compile(r'\b(360p|480p|720p|1080p|2160p|2k|4k)\b', re.IGNORECASE)
-    match = pattern.search(filename)
-    if match:
-        return match.group(1)
+match5 = re.search(pattern5, filename)Add commentMore actions
+    if match5:
+        return match5.group(1) or match5.group(2)
+    match6 = re.search(pattern6, filename)
+    if match6:
+        return "4k"
+    match7 = re.search(pattern7, filename)
+    if match7:
+        return "2k"
+    match8 = re.search(pattern8, filename)
+    if match8:
+        return "HdRip"
+    match9 = re.search(pattern9, filename)
+    if match9:
+        return "4kX264"
+    match10 = re.search(pattern10, filename)
+    if match10:
+        return "4kx265"
     return "Unknown"
 
 async def get_audio_track_type(file_path):
