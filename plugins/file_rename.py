@@ -35,41 +35,24 @@ def extract_season_number(filename):
         if match:
             return int(match.group(1))
     return 1  # Default to season 1 if not found
+    
+def extract_audio_type(filename: str) -> str:Add commentMore actions
+    lower = filename.lower()
 
-async def get_audio_track_type(file_path):Add commentMore actions
-    ffprobe_cmd = shutil.which('ffprobe')
-    if not ffprobe_cmd:
-        return "Unknown"
+    # Check for common audio markers
+    if "dual audio" in lower or "dual" in lower:
+        return "Dual Audio"
+    elif "multi audio" in lower or "multi" in lower:
 
-    command = [
-        ffprobe_cmd,
-        "-v", "error",
-        "-select_streams", "a",
-        "-show_entries", "stream=index",
-        "-of", "csv=p=0",
-        file_path
-    ]
-
-    try:
-        process = await asyncio.create_subprocess_exec(
-            *command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, _ = await process.communicate()
-        audio_tracks = stdout.decode().strip().splitlines()
-        count = len(audio_tracks)
-
-        if count == 1:
-            return "Single Audio"
-        elif count == 2:
-            return "Dual Audio"
-        elif count >= 3:
-            return "Multi Audio"
-        return "Unknown"
-    except Exception as e:
-        print(f"Audio detection error: {e}")
-        return "Unknown"
+        return "Multi Audio"
+    elif "triple audio" in lower or "triple" in lower:
+        return "Triple Audio"
+    elif "hindi" in lower and "english" in lower:
+        return "Dual Audio"
+    elif any(lang in lower for lang in ["hindi", "tamil", "telugu", "malayalam"]):
+        return "Single Audio"
+    else:
+        return "Single Audio"  # Default fallback
 
 def extract_episode_number(filename):
     """Extract episode number from filename for sorting"""
