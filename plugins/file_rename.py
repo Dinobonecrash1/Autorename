@@ -36,32 +36,51 @@ def extract_season_number(filename):
             return int(match.group(1))
     return 1  # Default to season 1 if not found
     
+import re
+
 def extract_audio_type(filename: str) -> str:
+    if not filename or not isinstance(filename, str):
+        return "Unknown"
+    
     lower = filename.lower()
-
-    # Try to find languages inside curly braces
-    match = re.search(r"\{([^\}]+)\}", lower)
-    if match:
-        lang_text = match.group(1)
-        langs = [lang.strip() for lang in lang_text.split("-")]
-        lang_count = len(set(langs))
-
-        if lang_count >= 3:
-            return "Multi Audio"
-        elif lang_count == 2:
-            return "Dual Audio"
-        elif lang_count == 1:
-            return "Single Audio"
-
-    # fallback if curly braces not found
-    if "multi audio" in lower:
+    
+    # List of specific languages to check
+    specific_languages = {'japanese', 'english', 'hindi', 'tamil', 'telugu'}
+    
+    # Check for specific languages in the filename (outside or inside braces)
+    found_languages = set()
+    for lang in specific_languages:
+        if lang in lower:
+            found_languages.add(lang)
+    
+    lang_count = len(found_languages)
+    
+    # If specific languages are found
+    if lang_count >= 3:
         return "Multi Audio"
-    elif "dual audio" in lower:
+    elif lang_count == 2:
         return "Dual Audio"
-    elif any(lang in lower for lang in ["hindi", "tamil", "telugu", "malayalam", "japanese", "english"]):
+    elif lang_count == 1:
         return "Single Audio"
+    
+    # Fallback to original logic: check for languages inside curly braces
+    match = re.search(r"\{([^\}]*)\}", lower)
+    if not match or not match.group(1).strip():
+        return "Unknown"
+    
+    lang_text = match.group(1)
+    langs = [lang.strip() for lang in lang_text.split("-") if lang.strip()]
+    lang_count = len(set(langs))
+    
+    if lang_count >= 3:
+        return "Multi Audio"
+    elif lang_count == 2:
+        return "Dual Audio"
+    elif lang_count == 1:
+        return "Single Audio"
+    else:
+        return "Unknown"
 
-    return "Single Audio"
 
 def extract_episode_number(filename):
     """Extract episode number from filename for sorting"""
