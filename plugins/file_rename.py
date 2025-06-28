@@ -36,6 +36,23 @@ def extract_season_number(filename):
             return int(match.group(1))
     return 1  # Default to season 1 if not found
 
+def extract_audio_type(filename: str) -> str:
+    lower = filename.lower()
+
+    # Check for common audio markers
+    if "dual audio" in lower or "dual" in lower:
+        return "Dual Audio"
+    elif "multi audio" in lower or "multi" in lower:
+        return "Multi Audio"
+    elif "triple audio" in lower or "triple" in lower:
+        return "Triple Audio"
+    elif "hindi" in lower and "english" in lower:
+        return "Dual Audio"
+    elif any(lang in lower for lang in ["hindi", "tamil", "telugu", "malayalam"]):
+        return "Single Audio"
+    else:
+        return "Single Audio"  # Default fallback
+
 def extract_episode_number(filename):
     """Extract episode number from filename for sorting"""
     pattern1 = re.compile(r'S(\d+)(?:E|EP)(\d+)')
@@ -402,7 +419,7 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
 
             path = metadata_file_path
              # audio add path 
-            audio_type = await get_audio_track_type(path)
+            audio_type = extract_audio_type(file_name)
             template = template.replace("{audio}", audio_type)
             
             upload_msg = await download_msg.edit("Wᴇᴡ... Iᴀᴍ Uᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
