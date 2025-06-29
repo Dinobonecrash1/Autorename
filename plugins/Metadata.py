@@ -9,7 +9,7 @@ async def metadata(client, message):
     user_id = message.from_user.id
 
     # Fetch user metadata from the database
-    current = await db.get_metadata(user_id)Add commentMore actions
+    current = await db.get_metadata(user_id)
     title = await db.get_title(user_id)
     author = await db.get_author(user_id)
     artist = await db.get_artist(user_id)
