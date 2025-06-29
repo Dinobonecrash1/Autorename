@@ -179,3 +179,30 @@ async def custom_tag(client, message):
     custom_tag = message.text.split(" ", 1)[1]
     await db.set_custom_tag(message.from_user.id, custom_tag=custom_tag)
     await message.reply_text("**✅ Eɴᴄᴏᴅᴇᴅ Bʏ Sᴀᴠᴇᴅ**")
+
+@Client.on_callback_query(filters.regex("start"))
+async def go_home(client, query: CallbackQuery):
+    await query.message.edit_text(
+        text=Txt.START_TXT.format(query.from_user.mention),
+        disable_web_page_preview=True,
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='commands')],
+            [InlineKeyboardButton("• ᴀʙᴏᴜᴛ", callback_data='about'),
+             InlineKeyboardButton("Dᴇᴠᴇʟᴏᴘᴇʀ •", url="https://t.me/Animeworld_zone")]
+        ])
+    )
+
+@Client.on_callback_query(filters.regex("commands"))
+async def go_back_to_commands(client, query: CallbackQuery):
+    await query.message.edit_text(
+        text=Txt.HELP_TXT.format(client.mention),
+        disable_web_page_preview=True,
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("• ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ ғᴏʀᴍᴀᴛ •", callback_data='file_names')],
+            [InlineKeyboardButton('• ᴛʜᴜᴍʙɴᴀɪʟ', callback_data='thumbnail'),
+             InlineKeyboardButton('ᴄᴀᴘᴛɪᴏɴ •', callback_data='caption')],
+            [InlineKeyboardButton('• ᴍᴇᴛᴀᴅᴀᴛᴀ', callback_data='meta'),
+             InlineKeyboardButton('ᴅᴏɴᴀᴛᴇ •', callback_data='donate')],
+            [InlineKeyboardButton('• ʜᴏᴍᴇ', callback_data='start')]
+        ])
+    )
