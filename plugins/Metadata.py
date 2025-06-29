@@ -201,7 +201,7 @@ async def go_back_to_commands(client, query: CallbackQuery):
             [InlineKeyboardButton("• ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ ғᴏʀᴍᴀᴛ •", callback_data='file_names')],
             [InlineKeyboardButton('• ᴛʜᴜᴍʙɴᴀɪʟ', callback_data='thumbnail'),
              InlineKeyboardButton('ᴄᴀᴘᴛɪᴏɴ •', callback_data='caption')],
-            [InlineKeyboardButton('• ᴍᴇᴛᴀᴅᴀᴛᴀ', callback_data='meta'),
+            [InlineKeyboardButton('• ᴍᴇᴛᴀᴅᴀᴛᴀ', callback_data='metadata'),
              InlineKeyboardButton('ᴅᴏɴᴀᴛᴇ •', callback_data='donate')],
             [InlineKeyboardButton('• ʜᴏᴍᴇ', callback_data='start')]
         ])
