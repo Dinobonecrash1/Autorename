@@ -196,19 +196,5 @@ class Database:
     async def set_custom_tag(self, user_id, custom_tag):
         await self.col.update_one({'_id': int(user_id)}, {'$set': {'custom_tag': custom_tag}})
 
-async def get_all_metadata(user_id):
-    data = await your_collection.find_one({"user_id": user_id})  # adjust for your DB
-    return {
-        "current": data.get("metadata", "Off"),
-        "title": data.get("title", ""),
-        "author": data.get("author", ""),
-        "artist": data.get("artist", ""),
-        "audio": data.get("audio", ""),
-        "subtitle": data.get("subtitle", ""),
-        "video": data.get("video", ""),
-        "encoded_by": data.get("encoded_by", ""),
-        "custom_tag": data.get("custom_tag", "")
-    }
-
 
 codeflixbots = Database(Config.DB_URL, Config.DB_NAME)
