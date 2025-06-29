@@ -8,7 +8,7 @@ from config import Config
 from aiohttp import web
 from route import web_server
 import pyrogram.utils
-
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 pyrogram.utils.MIN_CHANNEL_ID = -1002546088190
