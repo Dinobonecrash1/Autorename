@@ -5,11 +5,21 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from helper.database import codeflixbots
 from config import Config, Txt
-from metadata import metadata  # Import metadata function from metadata.py
+from metadata import metadata  # Import metadata function
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, handlers=[logging.FileHandler('bot.log'), logging.StreamHandler()])
 logger = logging.getLogger(__name__)
+
+async def edit_message_safely(query, text, reply_markup):
+    try:
+        if query.message.photo:
+            await query.message.edit_caption(caption=text, reply_markup=reply_markup)
+        else:
+            await query.message.edit_text(text=text, disable_web_page_preview=True, reply_markup=reply_markup)
+    except Exception as e:
+        logger.error(f"Error editing message: {e}")
+        await query.message.reply_text("An error occurred while updating the message.")
 
 # Start Command Handler
 @Client.on_message(filters.private & filters.command("start"))
@@ -20,7 +30,6 @@ async def start(client, message: Message):
     except Exception as e:
         logger.error(f"Error adding user {user.id}: {e}")
 
-    # Initial interactive text and sticker sequence
     states = ["Wᴇᴡ...Hᴏᴡ ᴀʀᴇ ʏᴏᴜ ᴅᴜᴅᴇ \nᴡᴀɪᴛ ᴀ ᴍᴏᴍᴇɴᴛ. . .", "🎊", "⚡", "**Iᴀᴍ sᴛᴀʀᴛɪɴɢ...!!**"]
     m = await message.reply_text(states[0])
     for state in states[1:]:
@@ -29,24 +38,17 @@ async def start(client, message: Message):
     await asyncio.sleep(0.4)
     await m.delete()
 
-    # Send sticker after the text sequence
     try:
         await message.reply_sticker("CAACAgUAAxkBAAEOzaBoX-Op03Qg8r9gLgYkdC4-cy_vUgACaxEAAkz3-Fd-hDy-se3CcTYE")
     except Exception as e:
         logger.error(f"Error sending sticker: {e}")
 
-    # Define buttons for the start message
     buttons = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')
-        ], 
-        [
-            InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'),
-            InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ•', url='https://t.me/Animeworld_zone')
-        ]
+        [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
+        [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'),
+         InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ•', url=Config.SUPPORT_URL)]
     ])
 
-    # Send start message with or without picture
     try:
         if Config.START_PIC:
             await message.reply_photo(
@@ -64,7 +66,7 @@ async def start(client, message: Message):
         logger.error(f"Error sending start message: {e}")
         await message.reply_text("An error occurred while starting the bot.")
 
-# Updated Callback Query Handler
+# Callback Query Handler
 @Client.on_callback_query()
 async def cb_handler(client, query: CallbackQuery):
     data = query.data
@@ -74,28 +76,28 @@ async def cb_handler(client, query: CallbackQuery):
 
     try:
         if data == "home":
-            await query.message.edit_text(
+            await edit_message_safely(
+                query,
                 text=Txt.START_TXT.format(query.from_user.mention),
-                disable_web_page_preview=True,
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
                     [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), 
-                     InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
+                     InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url=Config.SUPPORT_URL)]
                 ])
             )
         elif data == "caption":
-            await query.message.edit_text(
+            await edit_message_safely(
+                query,
                 text=Txt.CAPTION_TXT,
-                disable_web_page_preview=True,
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("• sᴜᴘᴘᴏʀᴛ", url='https://t.me/Animeworld_zone'), 
+                    [InlineKeyboardButton("• sᴜᴘᴘᴏʀᴛ", url=Config.SUPPORT_URL), 
                      InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
                 ])
             )
         elif data == "help":
-            await query.message.edit_text(
+            await edit_message_safely(
+                query,
                 text=Txt.HELP_TXT.format(client.mention),
-                disable_web_page_preview=True,
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("• ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ ғᴏʀᴍᴀᴛ •", callback_data='file_names')],
                     [InlineKeyboardButton('• ᴛʜᴜᴍʙɴᴀɪʟ', callback_data='thumbnail'), 
@@ -106,44 +108,46 @@ async def cb_handler(client, query: CallbackQuery):
                 ])
             )
         elif data == "metadata":
-            await metadata(client, query.message)  # Call metadata function from metadata.py
+            await metadata(client, query.message)
         elif data == "donate":
-            await query.message.edit_text(
+            await edit_message_safely(
+                query,
                 text=Txt.DONATE_TXT,
-                disable_web_page_preview=True,
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("• ʙᴀᴄᴋ", callback_data="help"), 
-                     InlineKeyboardButton("ᴏᴡɴᴇʀ •", url='https://t.me/Animeworld_zone')]
+                     InlineKeyboardButton("ᴏᴡɴᴇʀ •", url=Config.SUPPORT_URL)]
                 ])
             )
         elif data == "file_names":
-            format_template = await codeflixbots.get_format_template(user_id)
-            await query.message.edit_text(
-                text=Txt.FILE_NAME_TXT.format(format_template=format_template),
-                disable_web_page_preview=True,
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), 
-                     InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
-                ])
-            )
+            try:
+                format_template = await codeflixbots.get_format_template(user_id)
+                await edit_message_safely(
+                    query,
+                    text=Txt.FILE_NAME_TXT.format(format_template=format_template),
+                    reply_markup=InlineKeyboardMarkup([
+                        [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), 
+                         InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
+                    ])
+                )
+            except Exception as e:
+                logger.error(f"Error fetching format template for user {user_id}: {e}")
+                await query.message.reply_text("An error occurred while retrieving file name settings.")
         elif data == "thumbnail":
-            await query.message.edit_text(  # Changed to edit_text for consistency
+            await edit_message_safely(
+                query,
                 text=Txt.THUMBNAIL_TXT,
-                disable_web_page_preview=True,
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), 
                      InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
                 ])
             )
         elif data == "about":
-            await query.message.edit_text(
+            await edit_message_safely(
+                query,
                 text=Txt.ABOUT_TXT,
-                disable_web_page_preview=True,
                 reply_markup=InlineKeyboardMarkup([
-                    [
-                        InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close"),
-                        InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="home")
-                    ]
+                    [InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close"),
+                     InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="home")]
                 ])
             )
         elif data == "close":
