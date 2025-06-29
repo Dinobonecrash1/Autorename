@@ -95,7 +95,7 @@ async def start(client, message: Message):
         )
 
 
-Updated Callback Query Handler
+#Updated Callback Query Handler
 @Client.on_callback_query()
 async def cb_handler(client, query: CallbackQuery):
     data = query.data
