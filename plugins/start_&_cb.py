@@ -130,26 +130,28 @@ async def cb_handler(client, query: CallbackQuery):
         await query.message.edit_text(text, reply_markup=InlineKeyboardMarkup(buttons), disable_web_page_preview=True)
 
     elif data == "start":
-        await query.message.edit_text(
-            text=Txt.START_TXT.format(query.from_user.mention),
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
-                [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
-            ]),
-            disable_web_page_preview=True
-        )
+    await query.answer()
+    await query.message.edit_text(
+        text=Txt.START_TXT.format(query.from_user.mention),
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
+            [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
+        ]),
+        disable_web_page_preview=True
+    )
 
     elif data == "commands":
-        await query.message.edit_text(
-            text=Txt.HELP_TXT.format(client.mention),
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ ғᴏʀᴍᴀᴛ •", callback_data='file_names')],
-                [InlineKeyboardButton('• ᴛʜᴜᴍʙɴᴀɪʟ', callback_data='thumbnail'), InlineKeyboardButton('ᴄᴀᴘᴛɪᴏɴ •', callback_data='caption')],
-                [InlineKeyboardButton('• ᴍᴇᴛᴀᴅᴀᴛᴀ', callback_data='meta'), InlineKeyboardButton('ᴅᴏɴᴀᴛᴇ •', callback_data='donate')],
-                [InlineKeyboardButton('• ʜᴏᴍᴇ', callback_data='start')]
-            ]),
-            disable_web_page_preview=True
-        )
+    await query.answer()
+    await query.message.edit_text(
+        text=Txt.HELP_TXT.format(client.mention),
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("• ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ ғᴏʀᴍᴀᴛ •", callback_data='file_names')],
+            [InlineKeyboardButton('• ᴛʜᴜᴍʙɴᴀɪʟ', callback_data='thumbnail'), InlineKeyboardButton('ᴄᴀᴘᴛɪᴏɴ •', callback_data='caption')],
+            [InlineKeyboardButton('• ᴍᴇᴛᴀᴅᴀᴛᴀ', callback_data='meta'), InlineKeyboardButton('ᴅᴏɴᴀᴛᴇ •', callback_data='donate')],
+            [InlineKeyboardButton('• ʜᴏᴍᴇ', callback_data='start')]
+        ]),
+        disable_web_page_preview=True
+    )
 
     
     elif data == "donate":
