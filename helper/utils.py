@@ -18,18 +18,25 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
         elapsed_time = TimeFormatter(milliseconds=elapsed_time)
         estimated_total_time = TimeFormatter(milliseconds=estimated_total_time)
 
-        filled_blocks = int(percentage // 8.34)  # 12 block progress bar
-empty_blocks = 12 - filled_blocks
-bar = "█" * filled_blocks + "░" * empty_blocks
+        +12
+-11
+Lines changed: 12 additions & 11 deletions
+Original file line number	Diff line number	Diff line change
+@@ -18,17 +18,18 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
+        elapsed_time = TimeFormatter(milliseconds=elapsed_time)
+        estimated_total_time = TimeFormatter(milliseconds=estimated_total_time)
 
-tmp = Txt.PROGRESS_BAR.format(
-    bar=bar,
-    percent=round(percentage, 2),
-    done=humanbytes(current),
-    total=humanbytes(total),
-    speed=humanbytes(speed),
-    eta=estimated_total_time
-)
+        progress = "{0}{1}".format(
+            ''.join(["█" for i in range(math.floor(percentage / 8.34))]),
+            ''.join(["░" for i in range(12 - math.floor(percentage / 8.34))])
+        )            
+        tmp = progress + Txt.PROGRESS_BAR.format( 
+            round(percentage, 2),
+            humanbytes(current),
+            humanbytes(total),
+            humanbytes(speed),            
+            estimated_total_time if estimated_total_time != '' else "0 s"
+        )
         try:
             await message.edit(
                 text=f"{ud_type}\n\n{tmp}",               
