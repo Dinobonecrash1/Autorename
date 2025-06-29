@@ -140,7 +140,7 @@ async def cb_handler(client, query: CallbackQuery):
         disable_web_page_preview=True
     )
 
-    elif data == "commands":
+   elif data == "commands":
     await query.answer()
     await query.message.edit_text(
         text=Txt.HELP_TXT.format(client.mention),
