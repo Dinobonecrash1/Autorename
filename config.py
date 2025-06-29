@@ -6,7 +6,7 @@ class Config(object):
     API_ID = os.environ.get("API_ID", "21518327")
     API_HASH = os.environ.get("API_HASH", "e72f588b3e4763f01eecfc3c4aa7e8ac")
     BOT_TOKEN = os.environ.get("BOT_TOKEN", "7571014416:AAFsI9O9bEnVlvfWJYqhj3L43VoI2g089Y8") 
-
+    SUPPORT_URL = "https://t.me/Animeworld_zone
     # database config
     DB_NAME = os.environ.get("DB_NAME","Autorename")     
     
