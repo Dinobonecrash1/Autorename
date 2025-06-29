@@ -7,10 +7,22 @@ from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, 
 from helper.database import codeflixbots
 from config import *
 from config import Config
+from functools import wraps
+
+def check_ban(func):
+    @wraps(func)
+    async def wrapper(client, message, *args, **kwargs):
+        user_id = message.from_user.id
+        user = await codeflixbots.col.find_one({"_id": user_id})
+        if user and user.get("ban_status", {}).get("is_banned", False):
+            return await message.reply_text("🚫 You are banned from using this bot.")
+        return await func(client, message, *args, **kwargs)
+    return wrapper
 
     
 # Start Command Handler
 @Client.on_message(filters.private & filters.command("start"))
+@check_ban
 async def start(client, message: Message):
     user = message.from_user
     await codeflixbots.add_user(client, message)
@@ -60,6 +72,13 @@ async def start(client, message: Message):
 async def cb_handler(client, query: CallbackQuery):
     data = query.data
     user_id = query.from_user.id
+
+    # Check if the user is banned
+    user = await codeflixbots.col.find_one({"_id": user_id})
+    if user and user.get("ban_status", {}).get("is_banned", False):
+        await query.answer("🚫 You are banned from using this bot.", show_alert=True)
+        return  # Prevent further execution
+
     
     print(f"Callback data received: {data}")  # Debugging lin
 
