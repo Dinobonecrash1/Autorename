@@ -8,8 +8,7 @@ from config import Config
 from aiohttp import web
 from route import web_server
 import pyrogram.utils
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-import sys
+
 sys.path.append('/root/itsme/Autorename/plugins')
 
 pyrogram.utils.MIN_CHANNEL_ID = -1002546088190
