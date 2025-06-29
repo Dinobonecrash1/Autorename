@@ -73,7 +73,8 @@ class Txt(object):
 » ꜰᴏʀ ᴇx:- /set_caption ꜰɪʟᴇ ɴᴀᴍᴇ: {ꜰɪʟᴇɴᴀᴍᴇ}"""
 
     
-  PROGRESS_BAR = """<code>[{bar}] » {percent}%</code>
+  class Txt:
+    PROGRESS_BAR = """<code>[{bar}] » {percent}%</code>
 <b>📁 Size</b> : {done} | {total}
 <b>🚀 Speed</b> : {speed}/s
 <b>⏰ ETA</b> : {eta}"""
