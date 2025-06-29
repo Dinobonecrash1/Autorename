@@ -62,7 +62,7 @@ async def cb_handler(client, query: CallbackQuery):
     
     print(f"Callback data received: {data}")  # Debugging lin
 
-    if data == "home":Add commentMore actions
+    if data == "home":
         await query.message.edit_text(
             text=Txt.START_TXT.format(query.from_user.mention),
             disable_web_page_preview=True,
