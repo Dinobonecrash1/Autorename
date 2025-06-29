@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 from datetime import datetime, timedelta
 from pytz import timezone
@@ -10,6 +11,9 @@ from route import web_server
 import pyrogram.utils
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'plugins')
+                
 pyrogram.utils.MIN_CHANNEL_ID = -1002546088190
 SUPPORT_CHAT = os.environ.get("SUPPORT_CHAT", "@timecomenow0")
 
@@ -27,6 +31,9 @@ class Bot(Client):
         self.start_time = time.time()
 
     async def start(self):
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), 'plugins'))
         await super().start()
         me = await self.get_me()
         self.mention = me.mention
@@ -38,6 +45,7 @@ class Bot(Client):
             port = int(os.environ.get("PORT", 8585))
             await web.TCPSite(app, "0.0.0.0", port).start()
         print(f"{me.first_name} Is Started.....✨️")
+        # Rest of the start method...
         uptime_seconds = int(time.time() - self.start_time)
         uptime_string = str(timedelta(seconds=uptime_seconds))
         for chat_id in [Config.LOG_CHANNEL, SUPPORT_CHAT]:
