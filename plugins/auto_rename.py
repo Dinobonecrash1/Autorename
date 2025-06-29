@@ -1,8 +1,21 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from helper.database import codeflixbots
+from functools import wraps
+
+def check_ban(func):
+    @wraps(func)
+    async def wrapper(client, message, *args, **kwargs):
+        user_id = message.from_user.id
+        user = await codeflixbots.col.find_one({"_id": user_id})
+        if user and user.get("ban_status", {}).get("is_banned", False):
+            return await message.reply_text("🚫 You are banned from using this bot.")
+        return await func(client, message, *args, **kwargs)
+    return wrapper
+
 
 @Client.on_message(filters.private & filters.command("autorename"))
+@check_ban
 async def auto_rename_command(client, message):
     user_id = message.from_user.id
 
@@ -30,6 +43,7 @@ async def auto_rename_command(client, message):
     )
 
 @Client.on_message(filters.private & filters.command("setmedia"))
+@check_ban
 async def set_media_command(client, message):
     # Define inline keyboard buttons for media type selection
     keyboard = InlineKeyboardMarkup([
@@ -46,6 +60,12 @@ async def set_media_command(client, message):
 @Client.on_callback_query(filters.regex("^setmedia_"))
 async def handle_media_selection(client, callback_query):
     user_id = callback_query.from_user.id
+    # 🔒 Ban check
+    user = await codeflixbots.col.find_one({"_id": user_id})
+    if user and user.get("ban_status", {}).get("is_banned", False):
+        await callback_query.answer("🚫 You are banned from using this bot.", show_alert=True)
+        return
+        
     media_type = callback_query.data.split("_", 1)[1]  # Extract media type from callback data
 
     # Save the preferred media type in the database
