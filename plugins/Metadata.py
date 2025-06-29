@@ -1,180 +1,159 @@
-from helper.database import codeflixbots as db
+import random
+import asyncio
+import logging
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from config import Txt
+from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+from helper.database import codeflixbots
+from config import Config, Txt
+from metadata import metadata  # Import metadata function from metadata.py
 
-@Client.on_message(filters.command("metadata"))
-async def metadata(client, message):
-    user_id = message.from_user.id
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-    # Fetch user metadata from the database
-    current = await db.get_metadata(user_id)
-    title = await db.get_title(user_id)
-    author = await db.get_author(user_id)
-    artist = await db.get_artist(user_id)
-    video = await db.get_video(user_id)
-    audio = await db.get_audio(user_id)
-    subtitle = await db.get_subtitle(user_id)
-    encoded_by = await db.get_encoded_by(user_id)
-    custom_tag = await db.get_custom_tag(user_id)
+# Start Command Handler
+@Client.on_message(filters.private & filters.command("start"))
+async def start(client, message: Message):
+    user = message.from_user
+    try:
+        await codeflixbots.add_user(client, message)
+    except Exception as e:
+        logger.error(f"Error adding user {user.id}: {e}")
 
-    # Display the current metadata
-    text = f"""
-**㊋ Yᴏᴜʀ Mᴇᴛᴀᴅᴀᴛᴀ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ: {current}**
+    # Initial interactive text and sticker sequence
+    states = ["Wᴇᴡ...Hᴏᴡ ᴀʀᴇ ʏᴏᴜ ᴅᴜᴅᴇ \nᴡᴀɪᴛ ᴀ ᴍᴏᴍᴇɴᴛ. . .", "🎊", "⚡", "**Iᴀᴍ sᴛᴀʀᴛɪɴɢ...!!**"]
+    m = await message.reply_text(states[0])
+    for state in states[1:]:
+        await asyncio.sleep(0.4)
+        await m.edit_text(state)
+    await asyncio.sleep(0.4)
+    await m.delete()
 
-**◈ Tɪᴛʟᴇ ▹** `{title if title else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Aᴜᴛʜᴏʀ ▹** `{author if author else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Aʀᴛɪꜱᴛ ▹** `{artist if artist else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Aᴜᴅɪᴏ ▹** `{audio if audio else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Sᴜʙᴛɪᴛʟᴇ ▹** `{subtitle if subtitle else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Vɪᴅᴇᴏ ▹** `{video if video else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Eɴᴄᴏᴅᴇᴅ Bʏ ▹** `{encoded_by if encoded_by else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`
-**◈ Cᴜsᴛᴏᴍ Tᴀɢ ▹** `{custom_tag if custom_tag else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`
-    """
+    # Send sticker after the text sequence
+    try:
+        await message.reply_sticker("CAACAgUAAxkBAAEOzaBoX-Op03Qg8r9gLgYkdC4-cy_vUgACaxEAAkz3-Fd-hDy-se3CcTYE")
+    except Exception as e:
+        logger.error(f"Error sending sticker: {e}")
 
-    # Inline buttons to toggle metadata
-    buttons = [
+    # Define buttons for the start message
+    buttons = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton(f"On{' ✅' if current == 'On' else ''}", callback_data='on_metadata'),
-            InlineKeyboardButton(f"Off{' ✅' if current == 'Off' else ''}", callback_data='off_metadata')
-        ],
+            InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')
+        ], 
         [
-            InlineKeyboardButton("How to Set Metadata", callback_data="metainfo")
+            InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'),
+            InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ•', url='https://t.me/Animeworld_zone')
         ]
-    ]
-    keyboard = InlineKeyboardMarkup(buttons)
+    ])
 
-    await message.reply_text(text=text, reply_markup=keyboard, disable_web_page_preview=True)
+    # Send start message with or without picture
+    try:
+        if Config.START_PIC:
+            await message.reply_photo(
+                Config.START_PIC,
+                caption=Txt.START_TXT.format(user.mention),
+                reply_markup=buttons
+            )
+        else:
+            await message.reply_text(
+                text=Txt.START_TXT.format(user.mention),
+                reply_markup=buttons,
+                disable_web_page_preview=True
+            )
+    except Exception as e:
+        logger.error(f"Error sending start message: {e}")
+        await message.reply_text("An error occurred while starting the bot.")
 
-
-@Client.on_callback_query(filters.regex(r"on_metadata|off_metadata|metainfo"))
-async def metadata_callback(client, query: CallbackQuery):
-    user_id = query.from_user.id
+# Updated Callback Query Handler
+@Client.on_callback_query()
+async def cb_handler(client, query: CallbackQuery):
     data = query.data
-
-    if data == "on_metadata":
-        await db.set_metadata(user_id, "On")
-    elif data == "off_metadata":
-        await db.set_metadata(user_id, "Off")
-    elif data == "metainfo":
-        await query.message.edit_text(
-            text=Txt.META_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton("Hᴏᴍᴇ", callback_data="start"),
-                    InlineKeyboardButton("Bᴀᴄᴋ", callback_data="commands")
-                ]
-            ])
-        )
-        return
-
-    # Fetch updated metadata after toggling
-    current = await db.get_metadata(user_id)
-    title = await db.get_title(user_id)
-    author = await db.get_author(user_id)
-    artist = await db.get_artist(user_id)
-    video = await db.get_video(user_id)
-    audio = await db.get_audio(user_id)
-    subtitle = await db.get_subtitle(user_id)
-    encoded_by = await db.get_encoded_by(user_id)
-    custom_tag = await db.get_custom_tag(user_id)
-
-    # Updated metadata message after toggle
-    text = f"""
-**㊋ Yᴏᴜʀ Mᴇᴛᴀᴅᴀᴛᴀ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ: {current}**
-
-**◈ Tɪᴛʟᴇ ▹** `{title if title else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Aᴜᴛʜᴏʀ ▹** `{author if author else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Aʀᴛɪꜱᴛ ▹** `{artist if artist else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Aᴜᴅɪᴏ ▹** `{audio if audio else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Sᴜʙᴛɪᴛʟᴇ ▹** `{subtitle if subtitle else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Vɪᴅᴇᴏ ▹** `{video if video else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Eɴᴄᴏᴅᴇᴅ Bʏ ▹** `{encoded_by if encoded_by else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`
-**◈ Cᴜsᴛᴏᴍ Tᴀɢ ▹** `{custom_tag if custom_tag else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`
-    """
-
-    # Update inline buttons
-    buttons = [
-        [
-            InlineKeyboardButton(f"On{' ✅' if current == 'On' else ''}", callback_data='on_metadata'),
-            InlineKeyboardButton(f"Off{' ✅' if current == 'Off' else ''}", callback_data='off_metadata')
-        ],
-        [
-            InlineKeyboardButton("How to Set Metadata", callback_data="META_TXT")
-        ]
-    ]
-    await query.message.edit_text(text=text, reply_markup=InlineKeyboardMarkup(buttons), disable_web_page_preview=True)
-
-
-@Client.on_message(filters.private & filters.command('settitle'))
-async def title(client, message):
-    if len(message.command) == 1:
-        return await message.reply_text(
-            "**Gɪᴠᴇ Tʜᴇ Tɪᴛʟᴇ\n\nExᴀᴍᴩʟᴇ:- /settitle Encoded By @Animeworld_zone**")
-    title = message.text.split(" ", 1)[1]
-    await db.set_title(message.from_user.id, title=title)
-    await message.reply_text("**✅ Tɪᴛʟᴇ Sᴀᴠᴇᴅ**")
-
-@Client.on_message(filters.private & filters.command('setauthor'))
-async def author(client, message):
-    if len(message.command) == 1:
-        return await message.reply_text(
-            "**Gɪᴠᴇ Tʜᴇ Aᴜᴛʜᴏʀ\n\nExᴀᴍᴩʟᴇ:- /setauthor @Animeworld_zone**")
-    author = message.text.split(" ", 1)[1]
-    await db.set_author(message.from_user.id, author=author)
-    await message.reply_text("**✅ Aᴜᴛʜᴏʀ Sᴀᴠᴇᴅ**")
-
-@Client.on_message(filters.private & filters.command('setartist'))
-async def artist(client, message):
-    if len(message.command) == 1:
-        return await message.reply_text(
-            "**Gɪᴠᴇ Tʜᴇ Aʀᴛɪꜱᴛ\n\nExᴀᴍᴩʟᴇ:- /setartist @Animeworld_zone**")
-    artist = message.text.split(" ", 1)[1]
-    await db.set_artist(message.from_user.id, artist=artist)
-    await message.reply_text("**✅ Aʀᴛɪꜱᴛ Sᴀᴠᴇᴅ**")
-
-@Client.on_message(filters.private & filters.command('setaudio'))
-async def audio(client, message):
-    if len(message.command) == 1:
-        return await message.reply_text(
-            "**Gɪᴠᴇ Tʜᴇ Aᴜᴅɪᴏ Tɪᴛʟᴇ\n\nExᴀᴍᴩʟᴇ:- /setaudio @Animeworld_zone**")
-    audio = message.text.split(" ", 1)[1]
-    await db.set_audio(message.from_user.id, audio=audio)
-    await message.reply_text("**✅ Aᴜᴅɪᴏ Sᴀᴠᴇᴅ**")
-
-@Client.on_message(filters.private & filters.command('setsubtitle'))
-async def subtitle(client, message):
-    if len(message.command) == 1:
-        return await message.reply_text(
-            "**Gɪᴠᴇ Tʜᴇ Sᴜʙᴛɪᴛʟᴇ Tɪᴛʟᴇ\n\nExᴀᴍᴩʟᴇ:- /setsubtitle @Animeworld_zone**")
-    subtitle = message.text.split(" ", 1)[1]
-    await db.set_subtitle(message.from_user.id, subtitle=subtitle)
-    await message.reply_text("**✅ Sᴜʙᴛɪᴛʟᴇ Sᴀᴠᴇᴅ**")
-
-@Client.on_message(filters.private & filters.command('setvideo'))
-async def video(client, message):
-    if len(message.command) == 1:
-        return await message.reply_text(
-            "**Gɪᴠᴇ Tʜᴇ Vɪᴅᴇᴏ Tɪᴛʟᴇ\n\nExᴀᴍᴩʟᴇ:- /setvideo Encoded by @Animeworld_zone**")
-    video = message.text.split(" ", 1)[1]
-    await db.set_video(message.from_user.id, video=video)
-    await message.reply_text("**✅ Vɪᴅᴇᴏ Sᴀᴠᴇᴅ**")
-
-@Client.on_message(filters.private & filters.command('setencoded_by'))
-async def encoded_by(client, message):
-    if len(message.command) == 1:
-        return await message.reply_text(
-            "**Gɪᴠᴇ Tʜᴇ Eɴᴄᴏᴅᴇᴅ Bʏ Tɪᴛʟᴇ\n\nExᴀᴍᴩʟᴇ:- /setencoded_by Animeworld_zone**")
-    encoded_by = message.text.split(" ", 1)[1]
-    await db.set_encoded_by(message.from_user.id, encoded_by=encoded_by)
-    await message.reply_text("**✅ Eɴᴄᴏᴅᴇᴅ Bʏ Sᴀᴠᴇᴅ**")
+    user_id = query.from_user.id
     
-@Client.on_message(filters.private & filters.command('setcustom_tag'))
-async def custom_tag(client, message):
-    if len(message.command) == 1:
-        return await message.reply_text(
-            "**Gɪᴠᴇ Tʜᴇ Cᴜsᴛᴏᴍ Tᴀɢ Tɪᴛʟᴇ\n\nExᴀᴍᴩʟᴇ:- /setcustom_tag @Animeworld_zone**")
-    custom_tag = message.text.split(" ", 1)[1]
-    await db.set_custom_tag(message.from_user.id, custom_tag=custom_tag)
-    await message.reply_text("**✅ Eɴᴄᴏᴅᴇᴅ Bʏ Sᴀᴠᴇᴅ**")
+    logger.info(f"Callback data received: {data}")
+
+    try:
+        if data == "home":
+            await query.message.edit_text(
+                text=Txt.START_TXT.format(query.from_user.mention),
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
+                    [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), 
+                     InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
+                ])
+            )
+        elif data == "caption":
+            await query.message.edit_text(
+                text=Txt.CAPTION_TXT,
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("• sᴜᴘᴘᴏʀᴛ", url='https://t.me/Animeworld_zone'), 
+                     InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
+                ])
+            )
+        elif data == "help":
+            await query.message.edit_text(
+                text=Txt.HELP_TXT.format(client.mention),
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("• ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ ғᴏʀᴍᴀᴛ •", callback_data='file_names')],
+                    [InlineKeyboardButton('• ᴛʜᴜᴍʙɴᴀɪʟ', callback_data='thumbnail'), 
+                     InlineKeyboardButton('ᴄᴀᴘᴛɪᴏɴ •', callback_data='caption')],
+                    [InlineKeyboardButton('• ᴍᴇᴛᴀᴅᴀᴛᴀ', callback_data='metadata'), 
+                     InlineKeyboardButton('ᴅᴏɴᴀᴛᴇ •', callback_data='donate')],
+                    [InlineKeyboardButton('• ʜᴏᴍᴇ', callback_data='home')]
+                ])
+            )
+        elif data == "metadata":
+            await metadata(client, query.message)  # Call metadata function from metadata.py
+        elif data == "donate":
+            await query.message.edit_text(
+                text=Txt.DONATE_TXT,
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("• ʙᴀᴄᴋ", callback_data="help"), 
+                     InlineKeyboardButton("ᴏᴡɴᴇʀ •", url='https://t.me/Animeworld_zone')]
+                ])
+            )
+        elif data == "file_names":
+            format_template = await codeflixbots.get_format_template(user_id)
+            await query.message.edit_text(
+                text=Txt.FILE_NAME_TXT.format(format_template=format_template),
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), 
+                     InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
+                ])
+            )
+        elif data == "thumbnail":
+            await query.message.edit_text(  # Changed to edit_text for consistency
+                text=Txt.THUMBNAIL_TXT,
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), 
+                     InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
+                ])
+            )
+        elif data == "about":
+            await query.message.edit_text(
+                text=Txt.ABOUT_TXT,
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup([
+                    [
+                        InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close"),
+                        InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="home")
+                    ]
+                ])
+            )
+        elif data == "close":
+            try:
+                await query.message.delete()
+                if query.message.reply_to_message:
+                    await query.message.reply_to_message.delete()
+            except Exception as e:
+                logger.error(f"Error in close callback: {e}")
+                await query.message.reply_text("An error occurred while closing the message.")
+    except Exception as e:
+        logger.error(f"Error handling callback {data}: {e}")
+        await query.message.reply_text("An error occurred while processing your request.")
