@@ -12,7 +12,7 @@ import pyrogram.utils
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'plugins')
+sys.path.append(os.path.join(os.path.dirname(__file__), 'plugins'))
                 
 pyrogram.utils.MIN_CHANNEL_ID = -1002546088190
 SUPPORT_CHAT = os.environ.get("SUPPORT_CHAT", "@timecomenow0")
