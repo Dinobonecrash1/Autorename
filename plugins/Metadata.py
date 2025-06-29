@@ -9,16 +9,15 @@ async def metadata(client, message):
     user_id = message.from_user.id
 
     # Fetch user metadata from the database
-    meta = await db.get_metadata(user_id)
-    current = meta["current"]
-    title = meta["title"]
-    author = meta["author"]
-    artist = meta["artist"]
-    audio = meta["audio"]
-    subtitle = meta["subtitle"]
-    video = meta["video"]
-    encoded_by = meta["encoded_by"]
-    custom_tag = meta["custom_tag"]
+    current = await db.get_metadata(user_id)Add commentMore actions
+    title = await db.get_title(user_id)
+    author = await db.get_author(user_id)
+    artist = await db.get_artist(user_id)
+    video = await db.get_video(user_id)
+    audio = await db.get_audio(user_id)
+    subtitle = await db.get_subtitle(user_id)
+    encoded_by = await db.get_encoded_by(user_id)
+    custom_tag = await db.get_custom_tag(user_id)
     # Display the current metadata
     text = f"""
 **㊋ Yᴏᴜʀ Mᴇᴛᴀᴅᴀᴛᴀ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ: {current}**
