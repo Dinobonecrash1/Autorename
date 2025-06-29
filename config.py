@@ -72,11 +72,11 @@ class Txt(object):
 
 » ꜰᴏʀ ᴇx:- /set_caption ꜰɪʟᴇ ɴᴀᴍᴇ: {ꜰɪʟᴇɴᴀᴍᴇ}"""
 
-    PROGRESS_BAR = """\n
-<b>📁 Size</b> : {1} | {2}
-<b>⏳️ Done</b> : {0}%
-<b>🚀 Speed</b> : {3}/s
-<b>⏰️ ETA</b> : {4} """
+    
+  PROGRESS_BAR = """<code>[{bar}] » {percent}%</code>\n
+<b>📁 Size</b> : {done} | {total}
+<b>🚀 Speed</b> : {speed}/s
+<b>⏰ ETA</b> : {eta}"""
     
     
     DONATE_TXT = """<blockquote> ᴛʜᴀɴᴋs ғᴏʀ sʜᴏᴡɪɴɢ ɪɴᴛᴇʀᴇsᴛ ɪɴ ᴅᴏɴᴀᴛɪᴏɴ</blockquote>
