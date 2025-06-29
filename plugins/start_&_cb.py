@@ -60,9 +60,9 @@ async def cb_handler(client, query: CallbackQuery):
     data = query.data
     user_id = query.from_user.id
     
- print(f"Callback data received: {data}")  # Debugging lin
+    print(f"Callback data received: {data}")  # Debugging lin
 
-   if data == "home":Add commentMore actions
+    if data == "home":Add commentMore actions
         await query.message.edit_text(
             text=Txt.START_TXT.format(query.from_user.mention),
             disable_web_page_preview=True,
