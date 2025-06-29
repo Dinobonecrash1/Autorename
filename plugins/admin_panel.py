@@ -137,7 +137,8 @@ async def unban_user(bot, message):
     except Exception as e:
         await message.reply_text(f"❌ Usage: /unban user_id\nError: {e}")
 
-# --- List All Banned Users ---
+#banned user status 
+
 @Client.on_message(filters.command("banned") & filters.user(Config.ADMIN))
 async def banned_list(bot, message):
     msg = await message.reply("🔄 Fetching banned users...")
@@ -146,7 +147,13 @@ async def banned_list(bot, message):
     async for user in cursor:
         uid = user['_id']
         reason = user.get('ban_status', {}).get('ban_reason', '')
-        lines.append(f"👤 `{uid}` - {reason}")
+        try:
+            user_obj = await bot.get_users(uid)
+            name = user_obj.mention  # clickable name
+        except PeerIdInvalid:
+            name = f"`{uid}` (Name not found)"
+        lines.append(f"👤 {name} - {reason}")
+    
     if not lines:
         await msg.edit("✅ No users are currently banned.")
     else:
