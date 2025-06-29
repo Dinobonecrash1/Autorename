@@ -93,13 +93,42 @@ async def cb_handler(client, query: CallbackQuery):
             ])
         )
 
-    elif data == "meta":
-        await query.message.edit_text(  # Change edit_caption to edit_text
-            text=Txt.SEND_METADATA,  # Changed from caption to text
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
-            ])
-        )
+    elif data == "metadata":
+        current = await codeflixbots.get_metadata(user_id)
+        title = await codeflixbots.get_title(user_id)
+        author = await codeflixbots.get_author(user_id)
+        artist = await codeflixbots.get_artist(user_id)
+        video = await codeflixbots.get_video(user_id)
+        audio = await codeflixbots.get_audio(user_id)
+        subtitle = await codeflixbots.get_subtitle(user_id)
+        encoded_by = await codeflixbots.get_encoded_by(user_id)
+        custom_tag = await codeflixbots.get_custom_tag(user_id)
+
+        text = f"""
+㊋ Yᴏᴜʀ Mᴇᴛᴀᴅᴀᴛᴀ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ: {current}
+
+◈ Tɪᴛʟᴇ ▹ {title or 'Nᴏᴛ ꜰᴏᴜɴᴅ'}  
+◈ Aᴜᴛʜᴏʀ ▹ {author or 'Nᴏᴛ ꜰᴏᴜɴᴅ'}  
+◈ Aʀᴛɪꜱᴛ ▹ {artist or 'Nᴏᴛ ꜰᴏᴜɴᴅ'}  
+◈ Aᴜᴅɪᴏ ▹ {audio or 'Nᴏᴛ ꜰᴏᴜɴᴅ'}  
+◈ Sᴜʙᴛɪᴛʟᴇ ▹ {subtitle or 'Nᴏᴛ ꜰᴏᴜɴᴅ'}  
+◈ Vɪᴅᴇᴏ ▹ {video or 'Nᴏᴛ ꜰᴏᴜɴᴅ'}  
+◈ Eɴᴄᴏᴅᴇᴅ Bʏ ▹ {encoded_by or 'Nᴏᴛ ꜰᴏᴜɴᴅ'}  
+◈ Cᴜsᴛᴏᴍ Tᴀɢ ▹ {custom_tag or 'Nᴏᴛ ꜰᴏᴜɴᴅ'}
+        """
+
+        buttons = [
+            [
+                InlineKeyboardButton(f"On{' ✅' if current == 'On' else ''}", callback_data='on_metadata'),
+                InlineKeyboardButton(f"Off{' ✅' if current == 'Off' else ''}", callback_data='off_metadata')
+            ],
+            [
+                InlineKeyboardButton("How to Set Metadata", callback_data="metainfo"),
+                InlineKeyboardButton("« Back", callback_data="help")
+            ]
+        ]
+        await query.message.edit_text(text, reply_markup=InlineKeyboardMarkup(buttons), disable_web_page_preview=True)
+        
     elif data == "donate":
         await query.message.edit_text(
             text=Txt.DONATE_TXT,
