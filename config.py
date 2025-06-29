@@ -73,7 +73,7 @@ class Txt(object):
 » ꜰᴏʀ ᴇx:- /set_caption ꜰɪʟᴇ ɴᴀᴍᴇ: {ꜰɪʟᴇɴᴀᴍᴇ}"""
 
     
-  PROGRESS_BAR = """\n
+     PROGRESS_BAR = """\n
 <b>📁 Size</b> : {1} | {2}
 <b>⏳️ Done</b> : {0}%
 <b>🚀 Speed</b> : {3}/s
