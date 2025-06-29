@@ -9,7 +9,7 @@ async def metadata(client, message):
     user_id = message.from_user.id
 
     # Fetch user metadata from the database
-    meta = await db.get_all_metadata(user_id)
+    meta = await db.get_metadata(user_id)
     current = meta["current"]
     title = meta["title"]
     author = meta["author"]
