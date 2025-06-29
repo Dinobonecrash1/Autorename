@@ -5,12 +5,12 @@ class Config(object):
     # pyro client config
     API_ID = os.environ.get("API_ID", "21518327")
     API_HASH = os.environ.get("API_HASH", "e72f588b3e4763f01eecfc3c4aa7e8ac")
-    BOT_TOKEN = os.environ.get("BOT_TOKEN", "7571014416:AAFsI9O9bEnVlvfWJYqhj3L43VoI2g089Y8") 
-    SUPPORT_URL = "https://t.me/Animeworld_zone
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", "6721031289:AAF2orQmnkkSCJC7Rp7-fSehRaezexSRNtE") 
+    SUPPORT_URL = "https://t.me/Animeworld_zone"
     # database config
-    DB_NAME = os.environ.get("DB_NAME","Autorename")     
+    DB_NAME = os.environ.get("DB_NAME","Cluster0")     
     
-    DB_URL = os.environ.get("DB_URL","mongodb+srv://vinayjaat698:vinayjaat@autorename.6whzjfb.mongodb.net/?retryWrites=true&w=majority&appName=Autorename")
+    DB_URL = os.environ.get("DB_URL","mongodb+srv://kallu123:<db_password>@cluster0.3qgrfh5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
  
     # other configs
     BOT_UPTIME  = time.time()
@@ -19,7 +19,7 @@ class Config(object):
     FORCE_SUB   = os.environ.get("FORCE_SUB", "") 
     LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", "-1001839965169"))
     FSUB_PIC = os.environ.get("FSUB_PIC", "")
-    BOT_USERNAME = os.environ.get("BOT_USERNAME", "Auto_reanme_bbot")
+    BOT_USERNAME = os.environ.get("BOT_USERNAME", "SakuraXbot")
     # wes response configuration     
     WEBHOOK = bool(os.environ.get("WEBHOOK", "True"))
 
