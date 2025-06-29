@@ -1,5 +1,6 @@
 from config import Config, Txt
 from helper.database import codeflixbots
+from functools import wraps
 from pyrogram.types import Message
 from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, InputUserDeactivated, UserIsBlocked, PeerIdInvalid
@@ -14,6 +15,15 @@ ADMIN_USER_ID = Config.ADMIN
 # Flag to indicate if the bot is restarting
 is_restarting = False
 
+def check_ban(func):
+    @wraps(func)
+    async def wrapper(bot, message):
+        if await codeflixbots.is_banned(message.from_user.id):
+            return await message.reply("🚫 You are banned from using this bot.")
+        return await func(bot, message)
+    return wrapper
+
+
 @Client.on_message(filters.private & filters.command("restart") & filters.user(ADMIN_USER_ID))
 async def restart_bot(b, m):
     global is_restarting
@@ -25,10 +35,29 @@ async def restart_bot(b, m):
         time.sleep(2)
         # Restart the bot process
         os.execl(sys.executable, sys.executable, *sys.argv)
+@Client.on_message(filters.command("ban") & filters.user(Config.ADMIN))
+async def ban_user_handler(bot, message):
+    if not message.reply_to_message:
+        return await message.reply("Reply to a user's message to ban them.")
+    user_id = message.reply_to_message.from_user.id
+    await codeflixbots.ban_user(user_id)
+    await message.reply(f"User `{user_id}` has been banned.")
+
+@Client.on_message(filters.command("unban") & filters.user(Config.ADMIN))
+async def unban_user_handler(bot, message):
+    if not message.reply_to_message:
+        return await message.reply("Reply to a user's message to unban them.")
+    user_id = message.reply_to_message.from_user.id
+    await codeflixbots.unban_user(user_id)
+    await message.reply(f"User `{user_id}` has been unbanned.")
+
 
 @Client.on_message(filters.private & filters.command(["tutorial"]))
 async def tutorial(bot, message):
     user_id = message.from_user.id
+    if await codeflixbots.is_banned(user_id):
+        return await message.reply("🚫 You are banned from using this bot.")
+    
     format_template = await codeflixbots.get_format_template(user_id)
     await message.reply_text(
         text=Txt.FILE_NAME_TXT.format(format_template=format_template),
@@ -36,6 +65,19 @@ async def tutorial(bot, message):
         reply_markup=InlineKeyboardMarkup([InlineKeyboardButton("•⚡Main hub•", url="https://t.me/Animeworld_zone")]
         )
     )
+
+@Client.on_message(filters.command("banned") & filters.user(Config.ADMIN))
+async def list_banned_users(bot, message):
+    banned = await codeflixbots.get_banned_users()
+    text = "**Banned Users List:**\n"
+    count = 0
+    async for user in banned:
+        count += 1
+        text += f"{count}. `{user['_id']}`\n"
+    if count == 0:
+        text = "No banned users."
+    await message.reply(text)
+
 
 @Client.on_message(filters.command(["stats", "status"]) & filters.user(Config.ADMIN))
 async def get_stats(bot, message):
