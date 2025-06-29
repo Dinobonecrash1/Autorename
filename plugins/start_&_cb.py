@@ -1,7 +1,7 @@
 import random
 import asyncio
 from pyrogram import Client, filters
-ffrom helper.database import codeflixbots as db
+ffrom helper.database import codeflixbots
 from config import Txt
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from config import Config
