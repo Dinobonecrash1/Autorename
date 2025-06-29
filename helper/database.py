@@ -195,6 +195,19 @@ class Database:
 
     async def set_custom_tag(self, user_id, custom_tag):
         await self.col.update_one({'_id': int(user_id)}, {'$set': {'custom_tag': custom_tag}})
+# Example methods to add in helper/database.py
+
+    async def ban_user(user_id):
+        await db.banned_users.update_one({"_id": user_id}, {"$set": {"_id": user_id}}, upsert=True)
+ 
+    async def unban_user(user_id):
+        await db.banned_users.delete_one({"_id": user_id})
+
+    async def is_banned(user_id):
+        return await db.banned_users.find_one({"_id": user_id}) is not None
+
+    async def get_banned_users():
+        return db.banned_users.find()
 
 
 codeflixbots = Database(Config.DB_URL, Config.DB_NAME)
