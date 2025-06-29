@@ -9,7 +9,7 @@ from aiohttp import web
 from route import web_server
 import pyrogram.utils
 
-sys.path.append('/root/itsme/Autorename/plugins')
+
 
 pyrogram.utils.MIN_CHANNEL_ID = -1002546088190
 SUPPORT_CHAT = os.environ.get("SUPPORT_CHAT", "@timecomenow0")
