@@ -129,7 +129,7 @@ async def cb_handler(client, query: CallbackQuery):
         ]
         await query.message.edit_text(text, reply_markup=InlineKeyboardMarkup(buttons), disable_web_page_preview=True)
 
-  elif data == "start":
+elif data == "start":
      await query.answer()
      await query.message.edit_text(
         text=Txt.START_TXT.format(query.from_user.mention),
