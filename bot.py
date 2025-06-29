@@ -1,130 +1,62 @@
-import random
-import asyncio
-from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from helper.database import codeflixbots
-from config import Config, Txt
-from metadata import metadata  # Import metadata function
+import os
+import time
+from datetime import datetime, timedelta
+from pytz import timezone
+from pyrogram import Client, __version__
+from pyrogram.raw.all import layer
+from config import Config
+from aiohttp import web
+from route import web_server
+import pyrogram.utils
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-# Start Command Handler
-@Client.on_message(filters.private & filters.command("start"))
-async def start(client, message: Message):
-    user = message.from_user
-    await codeflixbots.add_user(client, message)
+pyrogram.utils.MIN_CHANNEL_ID = -1002546088190
+SUPPORT_CHAT = os.environ.get("SUPPORT_CHAT", "@timecomenow0")
 
-    m = await message.reply_text("Wᴇᴡ...Hᴏᴡ ᴀʀᴇ ʏᴏᴜ ᴅᴜᴅᴇ \nᴡᴀɪᴛ ᴀ ᴍᴏᴍᴇɴᴛ. . .")
-    await asyncio.sleep(0.4)
-    await m.edit_text("🎊")
-    await asyncio.sleep(0.5)
-    await m.edit_text("⚡")
-    await asyncio.sleep(0.5)
-    await m.edit_text("**Iᴀᴍ sᴛᴀʀᴛɪɴɢ...!!**")
-    await asyncio.sleep(0.4)
-    await m.delete()
+class Bot(Client):
+    def __init__(self):
+        super().__init__(
+            name="codeflixbots",
+            api_id=Config.API_ID,
+            api_hash=Config.API_HASH,
+            bot_token=Config.BOT_TOKEN,
+            workers=200,
+            plugins={"root": "plugins"},
+            sleep_threshold=15,
+        )
+        self.start_time = time.time()
 
-    await message.reply_sticker("CAACAgUAAxkBAAEOzaBoX-Op03Qg8r9gLgYkdC4-cy_vUgACaxEAAkz3-Fd-hDy-se3CcTYE")
+    async def start(self):
+        await super().start()
+        me = await self.get_me()
+        self.mention = me.mention
+        self.username = me.username
+        self.uptime = Config.BOT_UPTIME
+        if Config.WEBHOOK:
+            app = web.AppRunner(await web_server())
+            await app.setup()
+            port = int(os.environ.get("PORT", 8585))
+            await web.TCPSite(app, "0.0.0.0", port).start()
+        print(f"{me.first_name} Is Started.....✨️")
+        uptime_seconds = int(time.time() - self.start_time)
+        uptime_string = str(timedelta(seconds=uptime_seconds))
+        for chat_id in [Config.LOG_CHANNEL, SUPPORT_CHAT]:
+            try:
+                curr = datetime.now(timezone("Asia/Kolkata"))
+                date = curr.strftime('%d %B, %Y')
+                time_str = curr.strftime('%I:%M:%S %p')
+                await self.send_photo(
+                    chat_id=chat_id,
+                    photo=Config.START_PIC,
+                    caption=(
+                        "**I ʀᴇsᴛᴀʀᴛᴇᴅ ᴀɢᴀɪɴ !**\n\n"
+                        f"ɪ ᴅɪᴅɴ'ᴛ sʟᴇᴘᴛ sɪɴᴄᴇ​: `{uptime_string}`"
+                    ),
+                    reply_markup=InlineKeyboardMarkup(
+                        [[InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇs", url="https://t.me/Animeworld_zone")]]
+                    )
+                )
+            except Exception as e:
+                print(f"Failed to send message in chat {chat_id}: {e}")
 
-    buttons = InlineKeyboardMarkup([
-        [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
-        [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'),
-         InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ•', url='https://t.me/Animeworld_zone')]
-    ])
-
-    if Config.START_PIC:
-        await message.reply_photo(
-            Config.START_PIC,
-            caption=Txt.START_TXT.format(user.mention),
-            reply_markup=buttons
-        )
-    else:
-        await message.reply_text(
-            text=Txt.START_TXT.format(user.mention),
-            reply_markup=buttons,
-            disable_web_page_preview=True
-        )
-
-# Callback Query Handler
-@Client.on_callback_query()
-async def cb_handler(client, query: CallbackQuery):
-    data = query.data
-    user_id = query.from_user.id
-    
-    print(f"Callback data received: {data}")  # Debugging line
-
-    if data == "home":
-        await query.message.edit_text(
-            text=Txt.START_TXT.format(query.from_user.mention),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
-                [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), 
-                 InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
-            ])
-        )
-    elif data == "caption":
-        await query.message.edit_text(
-            text=Txt.CAPTION_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• sᴜᴘᴘᴏʀᴛ", url='https://t.me/Animeworld_zone'), 
-                 InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
-            ])
-        )
-    elif data == "help":
-        await query.message.edit_text(
-            text=Txt.HELP_TXT.format(client.mention),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ ғᴏʀᴍᴀᴛ •", callback_data='file_names')],
-                [InlineKeyboardButton('• ᴛʜᴜᴍʙɴᴀɪʟ', callback_data='thumbnail'), 
-                 InlineKeyboardButton('ᴄᴀᴘᴛɪᴏɴ •', callback_data='caption')],
-                [InlineKeyboardButton('• ᴍᴇᴛᴀᴅᴀᴛᴀ', callback_data='metadata'), 
-                 InlineKeyboardButton('ᴅᴏɴᴀᴛᴇ •', callback_data='donate')],
-                [InlineKeyboardButton('• ʜᴏᴍᴇ', callback_data='home')]
-            ])
-        )
-    elif data == "metadata":
-        await metadata(client, query.message)  # Call metadata function from metadata.py
-    elif data == "donate":
-        await query.message.edit_text(
-            text=Txt.DONATE_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ʙᴀᴄᴋ", callback_data="help"), 
-                 InlineKeyboardButton("ᴏᴡɴᴇʀ •", url='https://t.me/Animeworld_zone')]
-            ])
-        )
-    elif data == "file_names":
-        format_template = await codeflixbots.get_format_template(user_id)
-        await query.message.edit_text(
-            text=Txt.FILE_NAME_TXT.format(format_template=format_template),
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), 
-                 InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
-            ])
-        )
-    elif data == "thumbnail":
-        await query.message.edit_text(
-            text=Txt.THUMBNAIL_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), 
-                 InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
-            ])
-        )
-    elif data == "about":
-        await query.message.edit_text(
-            text=Txt.ABOUT_TXT,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close"),
-                 InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="home")]
-            ])
-        )
-    elif data == "close":
-        try:
-            await query.message.delete()
-            await query.message.reply_to_message.delete()
-        except:
-            await query.message.delete()
+Bot().run()
