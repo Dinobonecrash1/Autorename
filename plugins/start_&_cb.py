@@ -4,7 +4,7 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
-from helper.database import codeflixbots
+from helper.database import codeflixbots as db
 from config import *
 from config import Config
 
