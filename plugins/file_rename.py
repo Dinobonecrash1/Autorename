@@ -11,6 +11,9 @@ from plugins.antinsfw import check_anti_nsfw
 from helper.utils import progress_for_pyrogram, humanbytes, convert
 from helper.database import codeflixbots
 from config import Config
+from functools import wraps
+
+
 
 active_sequences = {}
 message_ids = {}
@@ -19,6 +22,16 @@ renaming_operations = {}
 # --- Semaphores for concurrent operations ---
 download_semaphore = asyncio.Semaphore(5)  # Allow 5 concurrent downloads
 upload_semaphore = asyncio.Semaphore(3)    # Allow 3 concurrent uploads
+
+def check_ban(func):
+    @wraps(func)
+    async def wrapper(client, message, *args, **kwargs):
+        user_id = message.from_user.id
+        user = await codeflixbots.col.find_one({"_id": user_id})
+        if user and user.get("ban_status", {}).get("is_banned", False):
+            return await message.reply_text("🚫 You are banned from using this bot.")
+        return await func(client, message, *args, **kwargs)
+    return wrapper
 
 def detect_quality(file_name):
     quality_order = {"480p": 1, "720p": 2, "1080p": 3}
@@ -113,8 +126,14 @@ def extract_episode_number(filename):
     return 999  # Default high number for files without episode numbers
 
 @Client.on_message(filters.command("start_sequence") & filters.private)
+@check_ban
 async def start_sequence(client, message: Message):
     user_id = message.from_user.id
+    # 🔒 Ban check
+    user = await codeflixbots.col.find_one({"_id": user_id})
+    if user and user.get("ban_status", {}).get("is_banned", False):
+        return await message.reply_text("🚫 You are banned from using this bot.")
+        
     if user_id in active_sequences:
         await message.reply_text("Hᴇʏ ᴅᴜᴅᴇ...!! A sᴇǫᴜᴇɴᴄᴇ ɪs ᴀʟʀᴇᴀᴅʏ ᴀᴄᴛɪᴠᴇ! Usᴇ /end_sequence ᴛᴏ ᴇɴᴅ ɪᴛ.")
     else:
@@ -124,8 +143,14 @@ async def start_sequence(client, message: Message):
         message_ids[user_id].append(msg.message_id)
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
+@check_ban
 async def auto_rename_files(client, message):
     user_id = message.from_user.id
+    # 🔒 Ban check
+    user = await codeflixbots.col.find_one({"_id": user_id})
+    if user and user.get("ban_status", {}).get("is_banned", False):
+        return await message.reply_text("🚫 You are banned from using this bot.")
+        
     file_id = (
         message.document.file_id if message.document else
         message.video.file_id if message.video else
@@ -153,6 +178,7 @@ async def auto_rename_files(client, message):
     asyncio.create_task(auto_rename_file(client, message, file_info))
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
+@check_ban
 async def end_sequence(client, message: Message):
     user_id = message.from_user.id
     if user_id not in active_sequences:
