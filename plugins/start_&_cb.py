@@ -140,17 +140,7 @@ async def cb_handler(client, query: CallbackQuery):
         disable_web_page_preview=True
     )
 
-  elif data == "start":
-    await query.answer()
-    await query.message.edit_text(
-        text=Txt.START_TXT.format(query.from_user.mention),
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
-            [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
-        ]),
-        disable_web_page_preview=True
-    )
-
+  
   elif data == "commands":
     await query.answer()
     await query.message.edit_text(
