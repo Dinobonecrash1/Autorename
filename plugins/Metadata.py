@@ -1,4 +1,3 @@
-
 from helper.database import codeflixbots as db
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
@@ -29,7 +28,7 @@ async def metadata(client, message):
 **◈ Aᴜᴅɪᴏ ▹** `{audio if audio else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
 **◈ Sᴜʙᴛɪᴛʟᴇ ▹** `{subtitle if subtitle else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
 **◈ Vɪᴅᴇᴏ ▹** `{video if video else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Eɴᴄᴏᴅᴇᴅ Bʏ ▹** `{encoded_by if encoded_by else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`
+**◈ Eɴᴄᴏᴅᴇᴅ Bʏ ▹** `{encoded_by if encoded_by else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
 **◈ Cᴜsᴛᴏᴍ Tᴀɢ ▹** `{custom_tag if custom_tag else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`
     """
 
@@ -47,7 +46,6 @@ async def metadata(client, message):
 
     await message.reply_text(text=text, reply_markup=keyboard, disable_web_page_preview=True)
 
-
 @Client.on_callback_query(filters.regex(r"on_metadata|off_metadata|metainfo"))
 async def metadata_callback(client, query: CallbackQuery):
     user_id = query.from_user.id
@@ -63,8 +61,8 @@ async def metadata_callback(client, query: CallbackQuery):
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
                 [
-                    InlineKeyboardButton("Hᴏᴍᴇ", callback_data="start"),
-                    InlineKeyboardButton("Bᴀᴄᴋ", callback_data="commands")
+                    InlineKeyboardButton("Hᴏᴍᴇ", callback_data="home"),
+                    InlineKeyboardButton("Bᴀᴄᴋ", callback_data="help")
                 ]
             ])
         )
@@ -91,7 +89,7 @@ async def metadata_callback(client, query: CallbackQuery):
 **◈ Aᴜᴅɪᴏ ▹** `{audio if audio else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
 **◈ Sᴜʙᴛɪᴛʟᴇ ▹** `{subtitle if subtitle else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
 **◈ Vɪᴅᴇᴏ ▹** `{video if video else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
-**◈ Eɴᴄᴏᴅᴇᴅ Bʏ ▹** `{encoded_by if encoded_by else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`
+**◈ Eɴᴄᴏᴅᴇᴅ Bʏ ▹** `{encoded_by if encoded_by else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`  
 **◈ Cᴜsᴛᴏᴍ Tᴀɢ ▹** `{custom_tag if custom_tag else 'Nᴏᴛ ꜰᴏᴜɴᴅ'}`
     """
 
@@ -102,11 +100,10 @@ async def metadata_callback(client, query: CallbackQuery):
             InlineKeyboardButton(f"Off{' ✅' if current == 'Off' else ''}", callback_data='off_metadata')
         ],
         [
-            InlineKeyboardButton("How to Set Metadata", callback_data="META_TXT")
+            InlineKeyboardButton("How to Set Metadata", callback_data="metainfo")
         ]
     ]
     await query.message.edit_text(text=text, reply_markup=InlineKeyboardMarkup(buttons), disable_web_page_preview=True)
-
 
 @Client.on_message(filters.private & filters.command('settitle'))
 async def title(client, message):
@@ -178,4 +175,4 @@ async def custom_tag(client, message):
             "**Gɪᴠᴇ Tʜᴇ Cᴜsᴛᴏᴍ Tᴀɢ Tɪᴛʟᴇ\n\nExᴀᴍᴩʟᴇ:- /setcustom_tag @Animeworld_zone**")
     custom_tag = message.text.split(" ", 1)[1]
     await db.set_custom_tag(message.from_user.id, custom_tag=custom_tag)
-    await message.reply_text("**✅ Eɴᴄᴏᴅᴇᴅ Bʏ Sᴀᴠᴇᴅ**")
+    await message.reply_text("**✅ Cᴜsᴛᴏᴍ Tᴀɢ Sᴀᴠᴇᴅ**")
