@@ -5,7 +5,7 @@ class Config(object):
     # pyro client config
     API_ID = os.environ.get("API_ID", "21518327")
     API_HASH = os.environ.get("API_HASH", "e72f588b3e4763f01eecfc3c4aa7e8ac")
-    BOT_TOKEN = os.environ.get("BOT_TOKEN", "6721031289:AAF2orQmnkkSCJC7Rp7-fSehRaezexSRNtE") 
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", "6721031289:AAGKpuXJL2pr-ugqc97XcmkgI1ExEnLWCyc") 
     SUPPORT_URL = "https://t.me/Animeworld_zone"
     # database config
     DB_NAME = os.environ.get("DB_NAME","Cluster0")     
