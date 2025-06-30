@@ -23,14 +23,17 @@ renaming_operations = {}
 download_semaphore = asyncio.Semaphore(5)  # Allow 5 concurrent downloads
 upload_semaphore = asyncio.Semaphore(3)    # Allow 3 concurrent uploads
 
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from config import ADMIN_URL  # Ensure you import the variable from your config
+
 def check_ban(func):
     @wraps(func)
     async def wrapper(client, message, *args, **kwargs):
         user_id = message.from_user.id
         user = await codeflixbots.col.find_one({"_id": user_id})
         if user and user.get("ban_status", {}).get("is_banned", False):
-              keyboard = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("📩 Contact Admin", url="ADMIN_URL")]]
+            keyboard = InlineKeyboardMarkup(
+                [[InlineKeyboardButton("📩 Contact Admin", url=ADMIN_URL)]]
             )
             return await message.reply_text(
                 "🚫 You are banned from using this bot.\n\nIf you think this is a mistake, contact the admin.",
@@ -38,6 +41,7 @@ def check_ban(func):
             )
         return await func(client, message, *args, **kwargs)
     return wrapper
+
     
 def detect_quality(file_name):
     quality_order = {"480p": 1, "720p": 2, "1080p": 3}
