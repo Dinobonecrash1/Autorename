@@ -79,23 +79,4 @@ async def handle_media_selection(client, callback_query):
     await callback_query.message.edit_text(f"**Media preference set to:** {media_type} ✅")
 
 
-@Client.on_message(filters.private & filters.text & ~filters.command)
-@check_ban
-async def manual_rename_text(client, message: Message):
-    user_id = message.from_user.id
-    data = codeflixbots.temp_files.get(user_id)
-
-    if not data:
-        return  # no file waiting
-
-    new_name = message.text.strip()
-    ext = data['ext']
-    final_name = f"{new_name}.{ext}"
-
-    file_msg = data['message']
-    await message.reply_text(f"✅ Renaming to: `{final_name}`")
-
-    await rename_file(client, file_msg, final_name)
-
-    del codeflixbots.temp_files[user_id]
 
