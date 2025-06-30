@@ -15,7 +15,13 @@ def check_ban(func):
         user_id = message.from_user.id
         user = await codeflixbots.col.find_one({"_id": user_id})
         if user and user.get("ban_status", {}).get("is_banned", False):
-            return await message.reply_text("🚫 You are banned from using this bot.")
+             keyboard = InlineKeyboardMarkup(
+                [[InlineKeyboardButton("📩 Contact Admin", url="https://t.me/your_admin_username")]]
+            )
+            return await message.reply_text(
+                "🚫 You are banned from using this bot.\n\nIf you think this is a mistake, contact the admin.",
+                reply_markup=keyboard
+            )
         return await func(client, message, *args, **kwargs)
     return wrapper
 
@@ -73,11 +79,15 @@ async def cb_handler(client, query: CallbackQuery):
     data = query.data
     user_id = query.from_user.id
 
-    # Check if the user is banned
     user = await codeflixbots.col.find_one({"_id": user_id})
     if user and user.get("ban_status", {}).get("is_banned", False):
-        await query.answer("🚫 You are banned from using this bot.", show_alert=True)
-        return  # Prevent further execution
+        await query.message.edit_text(
+            "🚫 You are banned from using this bot.\n\nIf you think this is a mistake, contact the admin.",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("📩 Contact Admin", url=ADMIN_URL)]]
+            )
+        )
+        return
 
     
     print(f"Callback data received: {data}")  # Debugging lin
