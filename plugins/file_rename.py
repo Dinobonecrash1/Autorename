@@ -171,9 +171,14 @@ async def file_entry_point(client: Client, message: Message):
 async def handle_manual_mode(client, message: Message):
     user_id = message.from_user.id
     media = message.document or message.video or message.audio
-    file_name = media.file_name
-    ext = file_name.split('.')[-1]
 
+    if not media:
+        await message.reply_text("❌ Unsupported media type.")
+        return
+
+    file_name = media.file_name
+    ext = file_name.split('.')[-1] if '.' in file_name else ''
+    
     codeflixbots.temp_files[user_id] = {
         "message": message,
         "file_name": file_name,
@@ -183,8 +188,9 @@ async def handle_manual_mode(client, message: Message):
 
     await message.reply_text(
         f"📝 **Original File Name:**\n`{file_name}`\n\n"
-        "Please send the new name (without extension)."
+        "Please reply with the **new name (without extension)**."
     )
+
  
 async def handle_auto_mode(client, message: Message):
     user_id = message.from_user.id
@@ -220,11 +226,10 @@ async def handle_manual_reply(client: Client, message: Message):
 
     media = old_message.document or old_message.video or old_message.audio
     if not media:
-        await message.reply_text("❌ Could not determine media type.")
+        await message.reply_text("❌ Could not detect media type.")
         return
 
     file_id = media.file_id
-    mime_type = media.mime_type
     msg = await message.reply_text(f"🔄 Renaming to `{new_name}`...")
 
     try:
@@ -256,6 +261,7 @@ async def handle_manual_reply(client: Client, message: Message):
         await msg.edit_text("✅ File renamed and sent.")
     except Exception as e:
         await msg.edit_text(f"❌ Failed to send file.\nError: `{e}`")
+
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
