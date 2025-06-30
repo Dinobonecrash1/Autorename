@@ -11,7 +11,6 @@ from PIL import Image
 import asyncio
 import os
 import time
-from helper.utils import add_prefix_suffix
 from config import Config
 
 app = Client("test", api_id=Config.STRING_API_ID,
