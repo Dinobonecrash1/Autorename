@@ -10,6 +10,7 @@ from route import web_server
 import pyrogram.utils
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+
 pyrogram.utils.MIN_CHANNEL_ID = -1002546088190
 SUPPORT_CHAT = os.environ.get("SUPPORT_CHAT", "@timecomenow0")
 
@@ -38,7 +39,6 @@ class Bot(Client):
             port = int(os.environ.get("PORT", 8585))
             await web.TCPSite(app, "0.0.0.0", port).start()
         print(f"{me.first_name} Is Started.....✨️")
-        print(f"Loaded plugins from: plugins/")  # Debug print
         uptime_seconds = int(time.time() - self.start_time)
         uptime_string = str(timedelta(seconds=uptime_seconds))
         for chat_id in [Config.LOG_CHANNEL, SUPPORT_CHAT]:
@@ -51,7 +51,7 @@ class Bot(Client):
                     photo=Config.START_PIC,
                     caption=(
                         "**I ʀᴇsᴛᴀʀᴛᴇᴅ ᴀɢᴀɪɴ !**\n\n"
-                        f"ɪ ᴅɪᴅɴ'ᴛ sʟᴇᴘᴛ sɪɴᴄᴇ: `{uptime_string}`"
+                        f"ɪ ᴅɪᴅɴ'ᴛ sʟᴇᴘᴛ sɪɴᴄᴇ​: `{uptime_string}`"
                     ),
                     reply_markup=InlineKeyboardMarkup(
                         [[InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇs", url="https://t.me/Animeworld_zone")]]
