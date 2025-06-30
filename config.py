@@ -7,6 +7,8 @@ class Config(object):
     API_HASH = os.environ.get("API_HASH", "e72f588b3e4763f01eecfc3c4aa7e8ac")
     BOT_TOKEN = os.environ.get("BOT_TOKEN", "6721031289:AAGKpuXJL2pr-ugqc97XcmkgI1ExEnLWCyc") 
     SUPPORT_URL = "https://t.me/Animeworld_zone"
+    ADMIN_URL = "https://t.me/V_Sbotmaker"
+
     # database config
     DB_NAME = os.environ.get("DB_NAME","Cluster0")     
     
