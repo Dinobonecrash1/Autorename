@@ -158,37 +158,33 @@ async def start_sequence(client, message: Message):
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
-async def file_entry_point(client: Client, message: Message):
+async def auto_rename_files(client, message):
     user_id = message.from_user.id
-    mode = await codeflixbots.get_rename_mode(user_id)
-    print(f"[DEBUG] rename mode: {mode}")  # <-- Add this for confirmation
-
-    if mode == "manual":
-        await handle_manual_mode(client, message)
-    else:
-        await handle_auto_mode(client, message)
-     
-
-async def handle_auto_mode(client, message: Message):
-    user_id = message.from_user.id
-    media = message.document or message.video or message.audio
-    file_name = media.file_name
-
+    file_id = (
+        message.document.file_id if message.document else
+        message.video.file_id if message.video else
+        message.audio.file_id
+    )
+    file_name = (
+        message.document.file_name if message.document else
+        message.video.file_name if message.video else
+        message.audio.file_name
+    )
     file_info = {
-        "file_id": media.file_id,
+        "file_id": file_id, 
         "file_name": file_name if file_name else "Unknown",
-        "message": message,
+        "message": message,  # Store the entire message for later processing
         "episode_num": extract_episode_number(file_name if file_name else "Unknown")
     }
 
     if user_id in active_sequences:
         active_sequences[user_id].append(file_info)
-        reply_msg = await message.reply_text("📦 File received! Use /end_sequence to finish.")
+        reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
         message_ids[user_id].append(reply_msg.message_id)
-    else:
-        asyncio.create_task(auto_rename_file(client, message, file_info))
+        return
 
-@Client.on_message(filters.private & filters.reply & filters.text)
+    # Not in sequence: Create concurrent task for auto renaming
+    asyncio.create_task(auto_rename_file(client, message, file_info))
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
