@@ -13,7 +13,12 @@ from helper.database import codeflixbots
 from config import Config
 from functools import wraps
 from pyrogram.enums import MessageMediaType
-from filerename import initiate_manual_rename  # Import manual rename handler
+
+try:
+    from filerename import initiate_manual_rename  # Try to import manual rename handler
+except ImportError:
+    print("Warning: filerename.py not found. Manual rename functionality will be disabled.")
+    initiate_manual_rename = None  # Fallback if import fails
 
 ADMIN_URL = Config.ADMIN_URL
 
@@ -165,7 +170,7 @@ async def auto_rename_files(client, message):
         message_ids[user_id].append(reply_msg.message_id)
         return
 
-    if rename_mode == "manual":
+    if rename_mode == "manual" and initiate_manual_rename:
         # Delegate to filerename.py for manual handling
         await initiate_manual_rename(client, message)
         return
@@ -196,7 +201,7 @@ async def end_sequence(client, message: Message):
             try:
                 await asyncio.sleep(0.5)
                 
-                if rename_mode == "manual":
+                if rename_mode == "manual" and initiate_manual_rename:
                     # Delegate to filerename.py for manual handling
                     await initiate_manual_rename(client, file_info["message"])
                 else:
