@@ -524,3 +524,4 @@
            if 'file_id' in locals() and file_id in renaming_operations:
                del renaming_operations[file_id]
            raise
+
