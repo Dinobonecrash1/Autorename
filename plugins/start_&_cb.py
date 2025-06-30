@@ -132,20 +132,20 @@ async def cb_handler(client, query: CallbackQuery):
             mode = "auto" if data == "set_auto" else "manual"
          await codeflixbots.set_rename_mode(user_id, mode)
    
-        current_mode = await codeflixbots.get_rename_mode(user_id)
-        auto_tick = "✅" if current_mode == "auto" else ""
-        manual_tick = "✅" if current_mode == "manual" else ""
+             current_mode = await codeflixbots.get_rename_mode(user_id)
+             auto_tick = "✅" if current_mode == "auto" else ""
+              manual_tick = "✅" if current_mode == "manual" else ""
 
-    await query.message.edit_text(
-        f"Choose your renaming mode:\n\nCurrent Mode: **{current_mode.upper()}**",
-        reply_markup=InlineKeyboardMarkup([
-            [
+         await query.message.edit_text(
+              f"Choose your renaming mode:\n\nCurrent Mode: **{current_mode.upper()}**",
+              reply_markup=InlineKeyboardMarkup([
+              [
                 InlineKeyboardButton(f"Auto Rename {auto_tick}", callback_data="set_auto"),
                 InlineKeyboardButton(f"Manual Rename {manual_tick}", callback_data="set_manual")
-            ],
-            [InlineKeyboardButton("« Back", callback_data="help")]
-        ])
-    )
+              ],
+              [InlineKeyboardButton("« Back", callback_data="help")]
+             ])
+           )
 
 
 
@@ -212,7 +212,8 @@ async def cb_handler(client, query: CallbackQuery):
         await query.message.edit_text(
             text=Txt.START_TXT.format(query.from_user.mention),
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
+                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')], [InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')
+            ],
                 [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
             ]),
             disable_web_page_preview=True
