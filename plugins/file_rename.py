@@ -165,7 +165,7 @@ async def auto_rename_files(client, message):
       await query.message.edit_text(
             "🚫 You are banned from using this bot.\n\nIf you think this is a mistake, contact the admin.",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("📩 Contact Admin", url=ADMIN_URL)]
+                [[InlineKeyboardButton("📩 Contact Admin", url=ADMIN_URL)]]
         
     file_id = (
         message.document.file_id if message.document else
