@@ -9,13 +9,16 @@ from config import *
 from config import Config
 from functools import wraps
 
+from functools import wraps
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 def check_ban(func):
     @wraps(func)
     async def wrapper(client, message, *args, **kwargs):
         user_id = message.from_user.id
         user = await codeflixbots.col.find_one({"_id": user_id})
         if user and user.get("ban_status", {}).get("is_banned", False):
-             keyboard = InlineKeyboardMarkup(
+            keyboard = InlineKeyboardMarkup(
                 [[InlineKeyboardButton("📩 Contact Admin", url="https://t.me/your_admin_username")]]
             )
             return await message.reply_text(
@@ -24,6 +27,7 @@ def check_ban(func):
             )
         return await func(client, message, *args, **kwargs)
     return wrapper
+
 
     
 # Start Command Handler
