@@ -128,7 +128,7 @@ async def cb_handler(client, query: CallbackQuery):
     )
 
     
-elif data in ["set_auto", "set_manual"]:
+    elif data in ["set_auto", "set_manual"]:
     mode = "auto" if data == "set_auto" else "manual"
     await codeflixbots.set_rename_mode(user_id, mode)
 
