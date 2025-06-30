@@ -225,19 +225,21 @@ async def handle_manual_reply(client: Client, message: Message):
         "file_name": new_name,
         "message": temp["message"]
     }
-msg = await message.reply_text(f"🔄 Renaming to `{new_name}`...")
 
-try:
-    await client.send_document(
-        chat_id=message.chat.id,
-        document=file_info["file_id"],
-        file_name=new_name,
-        caption=None,
-        reply_to_message_id=message.message_id
-    )
-    await msg.edit_text("✅ File renamed and sent.")
-except Exception as e:
-    await msg.edit_text(f"❌ Failed to send file.\nError: `{e}`")
+    msg = await message.reply_text(f"🔄 Renaming to `{new_name}`...")
+
+    try:
+        await client.send_document(
+            chat_id=message.chat.id,
+            document=file_info["file_id"],
+            file_name=new_name,
+            caption=None,
+            reply_to_message_id=message.message_id
+        )
+        await msg.edit_text("✅ File renamed and sent.")
+    except Exception as e:
+        await msg.edit_text(f"❌ Failed to send file.\nError: `{e}`")
+
 
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
