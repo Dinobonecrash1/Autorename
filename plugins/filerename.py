@@ -1,17 +1,17 @@
-   import random
-   from helper.ffmpeg import fix_thumb, take_screen_shot
-   from pyrogram import Client, filters
-   from pyrogram.enums import MessageMediaType
-   from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply
-   from hachoir.metadata import extractMetadata
-   from hachoir.parser import createParser
-   from helper.utils import progress_for_pyrogram, convert, humanbytes
-   from helper.database import codeflixbots  # Changed from db to codeflixbots for consistency
-   from PIL import Image
-   import asyncio
-   import os
-   import time
-   from config import Config
+import random
+from helper.ffmpeg import fix_thumb, take_screen_shot
+from pyrogram import Client, filters
+from pyrogram.enums import MessageMediaType
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply
+from hachoir.metadata import extractMetadata
+from hachoir.parser import createParser
+from helper.utils import progress_for_pyrogram, convert, humanbytes
+from helper.database import codeflixbots  # Changed from db to codeflixbots for consistency
+from PIL import Image
+import asyncio
+import os
+import time
+from config import Config
 
    # Note: Client instance will be provided by the main script, not defined here
    pending_manual_rename = {}  # Store pending manual rename requests (though not used in this version due to reply-based flow)
