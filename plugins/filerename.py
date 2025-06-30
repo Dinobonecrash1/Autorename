@@ -13,10 +13,8 @@ import os
 import time
 from config import Config
 
-app = Client("test", api_id=Config.API_ID,
-             api_hash=Config.API_HASH)
-
-pending_manual_rename = {}  # Store pending manual rename requests
+# Note: Client instance will be provided by the main script, not defined here
+pending_manual_rename = {}  # Store pending manual rename requests (though not used in this version due to reply-based flow)
 
 # Handle the 'rename' callback
 @Client.on_callback_query(filters.regex('rename'))
@@ -73,16 +71,9 @@ async def manual_upload(bot, update):
     if not os.path.isdir("Metadata"):
         os.mkdir("Metadata")
 
-    # Extracting necessary information
-    prefix = await db.get_prefix(update.message.chat.id)
-    suffix = await db.get_suffix(update.message.chat.id)
+    # Extracting necessary information (removing prefix and suffix)
     new_name = update.message.text.split(":-")[1].strip()
-    new_filename_ = new_name
-
-    try:
-        new_filename = add_prefix_suffix(new_filename_, prefix, suffix)
-    except Exception as e:
-        return await update.message.edit(f"⚠️ Something went wrong can't able to set Prefix or Suffix ☹️ \n\n❄️ Contact My Creator -> @sewxiy\nError: {e}")
+    new_filename = new_name  # No prefix/suffix applied
 
     file_path = f"downloads/{new_filename}"
     file = update.message.reply_to_message
