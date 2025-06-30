@@ -159,16 +159,16 @@ async def start_sequence(client, message: Message):
 @check_ban
 async def auto_rename_files(client, message):
     user_id = message.from_user.id
-    # 🔒 Ban check
-    user = await codeflixbots.col.find_one({"_id": user_id})
-    if user and user.get("ban_status", {}).get("is_banned", False):
-      await query.message.edit_text(
-            "🚫 You are banned from using this bot.\n\nIf you think this is a mistake, contact the admin.",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("📩 Contact Admin", url=ADMIN_URL)]]
-            )
-      )
-        return
+
+    # Ban check is already handled by @check_ban
+
+    # Your normal logic below here...
+    # Example:
+    await message.reply_text("File received. Processing...")
+
+    # Your renaming logic continues...
+
+  
         
     file_id = (
         message.document.file_id if message.document else
