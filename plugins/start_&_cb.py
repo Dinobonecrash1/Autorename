@@ -128,9 +128,9 @@ async def cb_handler(client, query: CallbackQuery):
     )
 
     elif data == "mode":
-    current_mode = await codeflixbots.get_rename_mode(user_id)
-    auto_tick = "✅" if current_mode == "auto" else ""
-    manual_tick = "✅" if current_mode == "manual" else ""
+        current_mode = await codeflixbots.get_rename_mode(user_id)
+        auto_tick = "✅" if current_mode == "auto" else ""
+        manual_tick = "✅" if current_mode == "manual" else ""
 
     await query.message.edit_text(
         "Choose your renaming mode:",
