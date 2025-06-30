@@ -10,6 +10,8 @@ from config import Config
 from functools import wraps
 from file_rename import *
 from filerename import *
+
+app = Client("my_bot")
 app.run()  # app आपका Pyrogram Client है
 ADMIN_URL = Config.ADMIN_URL
 
