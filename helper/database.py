@@ -33,6 +33,17 @@ class Database:
             )
         )
 
+    async def set_rename_mode(self, user_id, mode):
+        await self.col.update_one(
+            {"_id": user_id},
+            {"$set": {"rename_mode": mode}},
+            upsert=True
+        )
+
+    async def get_rename_mode(self, user_id):
+        user = await self.col.find_one({"_id": user_id})
+        return user.get("rename_mode", "auto") if user else "auto"
+
     async def add_user(self, b, m):
         u = m.from_user
         if not await self.is_user_exist(u.id):
@@ -209,17 +220,6 @@ class Database:
     async def get_banned_users():
         return db.banned_users.find()
 
-# In helper/database.py
-    async def set_rename_mode(user_id, mode):
-        await codeflixbots.col.update_one(
-              {"_id": user_id},
-              {"$set": {"rename_mode": mode}},
-              upsert=True
-         )
-
-    async def get_rename_mode(user_id):
-        user = await codeflixbots.col.find_one({"_id": user_id})
-        return user.get("rename_mode", "auto")  # default to auto
 
 
 
