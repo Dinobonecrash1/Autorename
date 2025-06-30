@@ -18,7 +18,7 @@ try:
     from filerename import rename  # Try to import manual rename handler
 except ImportError:
     print("Warning: filerename.py not found. Manual rename functionality will be disabled.")
-    initiate_manual_rename = None  # Fallback if import fails
+    rename = None  # Fallback if import fails
 
 ADMIN_URL = Config.ADMIN_URL
 
@@ -170,9 +170,9 @@ async def auto_rename_files(client, message):
         message_ids[user_id].append(reply_msg.message_id)
         return
 
-    if rename_mode == "manual" and initiate_manual_rename:
+    if rename_mode == "manual" and rename:
         # Delegate to filerename.py for manual handling
-        await initiate_manual_rename(client, message)
+        await rename(client, message)
         return
 
     asyncio.create_task(auto_rename_file(client, message, file_info))
@@ -201,9 +201,9 @@ async def end_sequence(client, message: Message):
             try:
                 await asyncio.sleep(0.5)
                 
-                if rename_mode == "manual" and initiate_manual_rename:
+                if rename_mode == "manual" and rename:
                     # Delegate to filerename.py for manual handling
-                    await initiate_manual_rename(client, file_info["message"])
+                    await rename(client, file_info["message"])
                 else:
                     await client.send_document(
                         message.chat.id,
@@ -322,7 +322,7 @@ async def concurrent_upload(client, message, path, media_type, caption, ph_path,
                     thumb=ph_path,
                     caption=caption,
                     progress=progress_for_pyrogram,
-                    progress_args=("Uᴘʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
+                    progress_args=("Uᴩʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
                 )
             elif media_type == "video":
                 await client.send_video(
@@ -332,7 +332,7 @@ async def concurrent_upload(client, message, path, media_type, caption, ph_path,
                     thumb=ph_path,
                     duration=0,
                     progress=progress_for_pyrogram,
-                    progress_args=("Uᴘʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
+                    progress_args=("Uᴩʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
                 )
             elif media_type == "audio":
                 await client.send_audio(
@@ -342,7 +342,7 @@ async def concurrent_upload(client, message, path, media_type, caption, ph_path,
                     thumb=ph_path,
                     duration=0,
                     progress=progress_for_pyrogram,
-                    progress_args=("Uᴘʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
+                    progress_args=("Uᴩʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
                 )
         except Exception as e:
             raise Exception(f"Upload Error: {e}")
@@ -467,7 +467,7 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
 
             path = metadata_file_path
             
-            upload_msg = await download_msg.edit("Wᴇᴡ... Iᴀᴍ Uᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
+            upload_msg = await download_msg.edit("Wᴇᴡ... Iᴀᴍ Uᴩʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
 
             c_caption = await codeflixbots.get_caption(message.chat.id)
             c_thumb = await codeflixbots.get_thumbnail(message.chat.id)
