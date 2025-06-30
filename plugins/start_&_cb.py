@@ -1,16 +1,13 @@
-
 import random
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-
 from helper.database import codeflixbots
 from config import *
 from config import Config
 from functools import wraps
 
 ADMIN_URL = Config.ADMIN_URL
-
 
 def check_ban(func):
     @wraps(func)
@@ -28,16 +25,12 @@ def check_ban(func):
         return await func(client, message, *args, **kwargs)
     return wrapper
 
-
-    
-# Start Command Handler
 @Client.on_message(filters.private & filters.command("start"))
 @check_ban
 async def start(client, message: Message):
     user = message.from_user
     await codeflixbots.add_user(client, message)
 
-    # Initial interactive text and sticker sequence
     m = await message.reply_text("Wᴇᴡ...Hᴏᴡ ᴀʀᴇ ʏᴏᴜ ᴅᴜᴅᴇ \nᴡᴀɪᴛ ᴀ ᴍᴏᴍᴇɴᴛ. . .")
     await asyncio.sleep(0.4)
     await m.edit_text("🎊")
@@ -48,10 +41,8 @@ async def start(client, message: Message):
     await asyncio.sleep(0.4)
     await m.delete()
 
-    # Send sticker after the text sequence
     await message.reply_sticker("CAACAgUAAxkBAAEOzaBoX-Op03Qg8r9gLgYkdC4-cy_vUgACaxEAAkz3-Fd-hDy-se3CcTYE")
 
-    # Define buttons for the start message
     buttons = InlineKeyboardMarkup([
         [
             InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')
@@ -59,14 +50,12 @@ async def start(client, message: Message):
         [
             InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')
         ],
-
         [
             InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'),
             InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ•', url='https://t.me/Animeworld_zone')
         ]
     ])
 
-    # Send start message with or without picture
     if Config.START_PIC:
         await message.reply_photo(
             Config.START_PIC,
@@ -80,8 +69,6 @@ async def start(client, message: Message):
             disable_web_page_preview=True
         )
 
-
-#Updated Callback Query Handler
 @Client.on_callback_query()
 async def cb_handler(client, query: CallbackQuery):
     data = query.data
@@ -97,16 +84,15 @@ async def cb_handler(client, query: CallbackQuery):
         )
         return
 
-    
-    print(f"Callback data received: {data}")  # Debugging lin
+    print(f"Callback data received: {data}")
 
     if data == "home":
         await query.message.edit_text(
             text=Txt.START_TXT.format(query.from_user.mention),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')], [InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')],
-
+                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
+                [InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')],
                 [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
             ])
         )
@@ -117,7 +103,7 @@ async def cb_handler(client, query: CallbackQuery):
         manual_tick = "✅" if current_mode == "manual" else ""
 
         await query.message.edit_text(
-            "Choose your renaming mode:",
+            "Choose your renaming mode:\n\n- **Auto Rename**: Automatically renames files based on season, episode, quality, and audio.\n- **Manual Rename**: Use the 'START RENAME' button to set your own file name.",
             reply_markup=InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton(f"Auto Rename {auto_tick}", callback_data="set_auto"),
@@ -136,7 +122,7 @@ async def cb_handler(client, query: CallbackQuery):
         manual_tick = "✅" if current_mode == "manual" else ""
 
         await query.message.edit_text(
-            f"Choose your renaming mode:\n\nCurrent Mode: **{current_mode.upper()}**",
+            f"Renaming mode set to: **{current_mode.upper()}**\n\n- **Auto Rename**: Automatically renames files based on season, episode, quality, and audio.\n- **Manual Rename**: Use the 'START RENAME' button to set your own file name.",
             reply_markup=InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton(f"Auto Rename {auto_tick}", callback_data="set_auto"),
@@ -146,10 +132,6 @@ async def cb_handler(client, query: CallbackQuery):
             ]) 
            )
 
-
-
-
-    
     elif data == "caption":
         await query.message.edit_text(
             text=Txt.CAPTION_TXT,
@@ -212,8 +194,8 @@ async def cb_handler(client, query: CallbackQuery):
         await query.message.edit_text(
             text=Txt.START_TXT.format(query.from_user.mention),
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')], [InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')
-            ],
+                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
+                [InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')],
                 [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
             ]),
             disable_web_page_preview=True
@@ -268,7 +250,6 @@ async def cb_handler(client, query: CallbackQuery):
             ]])          
         )
     
-    
     elif data == "close":
         try:
             await query.message.delete()
@@ -277,5 +258,3 @@ async def cb_handler(client, query: CallbackQuery):
         except:
             await query.message.delete()
             await query.message.continue_propagation()
-
-   
