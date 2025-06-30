@@ -5,7 +5,7 @@ import shutil
 import asyncio
 from datetime import datetime
 from PIL import Image
-from pyrogram import Client, filters  # Added Client import
+from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from plugins.antinsfw import check_anti_nsfw
 from helper.utils import progress_for_pyrogram, humanbytes, convert
@@ -171,10 +171,11 @@ async def auto_rename_files(client, message):
         return
 
     if rename_mode == "manual" and rename:
-        # Delegate to filerename.py for manual handling
+        # Delegate all handling to filerename.py when manual mode is ON
         await rename(client, message)
         return
 
+    # Only proceed with auto-renaming if manual mode is OFF
     asyncio.create_task(auto_rename_file(client, message, file_info))
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
