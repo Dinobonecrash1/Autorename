@@ -6,11 +6,9 @@ from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, 
 
 from helper.database import codeflixbots
 from config import *
-from config import Config
+from config import ADMIN_URL, Config
 from functools import wraps
 
-from functools import wraps
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 def check_ban(func):
     @wraps(func)
