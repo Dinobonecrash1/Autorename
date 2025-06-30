@@ -29,10 +29,16 @@ def check_ban(func):
         user_id = message.from_user.id
         user = await codeflixbots.col.find_one({"_id": user_id})
         if user and user.get("ban_status", {}).get("is_banned", False):
-            return await message.reply_text("🚫 You are banned from using this bot.")
+              keyboard = InlineKeyboardMarkup(
+                [[InlineKeyboardButton("📩 Contact Admin", url="ADMIN_URL")]]
+            )
+            return await message.reply_text(
+                "🚫 You are banned from using this bot.\n\nIf you think this is a mistake, contact the admin.",
+                reply_markup=keyboard
+            )
         return await func(client, message, *args, **kwargs)
     return wrapper
-
+    
 def detect_quality(file_name):
     quality_order = {"480p": 1, "720p": 2, "1080p": 3}
     match = re.search(r"(480p|720p|1080p)", file_name)
@@ -132,7 +138,10 @@ async def start_sequence(client, message: Message):
     # 🔒 Ban check
     user = await codeflixbots.col.find_one({"_id": user_id})
     if user and user.get("ban_status", {}).get("is_banned", False):
-        return await message.reply_text("🚫 You are banned from using this bot.")
+       await query.message.edit_text(
+            "🚫 You are banned from using this bot.\n\nIf you think this is a mistake, contact the admin.",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("📩 Contact Admin", url=ADMIN_URL)]
         
     if user_id in active_sequences:
         await message.reply_text("Hᴇʏ ᴅᴜᴅᴇ...!! A sᴇǫᴜᴇɴᴄᴇ ɪs ᴀʟʀᴇᴀᴅʏ ᴀᴄᴛɪᴠᴇ! Usᴇ /end_sequence ᴛᴏ ᴇɴᴅ ɪᴛ.")
@@ -149,7 +158,10 @@ async def auto_rename_files(client, message):
     # 🔒 Ban check
     user = await codeflixbots.col.find_one({"_id": user_id})
     if user and user.get("ban_status", {}).get("is_banned", False):
-        return await message.reply_text("🚫 You are banned from using this bot.")
+      await query.message.edit_text(
+            "🚫 You are banned from using this bot.\n\nIf you think this is a mistake, contact the admin.",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("📩 Contact Admin", url=ADMIN_URL)]
         
     file_id = (
         message.document.file_id if message.document else
