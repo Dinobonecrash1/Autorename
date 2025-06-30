@@ -15,7 +15,7 @@ from functools import wraps
 from pyrogram.enums import MessageMediaType
 
 try:
-    from filerename import initiate_manual_rename  # Try to import manual rename handler
+    from filerename import rename  # Try to import manual rename handler
 except ImportError:
     print("Warning: filerename.py not found. Manual rename functionality will be disabled.")
     initiate_manual_rename = None  # Fallback if import fails
