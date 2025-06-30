@@ -139,21 +139,21 @@ def extract_episode_number(filename):
 @check_ban
 async def start_sequence(client, message: Message):
     user_id = message.from_user.id
-    # 🔒 Ban check
-    user = await codeflixbots.col.find_one({"_id": user_id})
-    if user and user.get("ban_status", {}).get("is_banned", False):
-       await query.message.edit_text(
-            "🚫 You are banned from using this bot.\n\nIf you think this is a mistake, contact the admin.",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("📩 Contact Admin", url=ADMIN_URL)]
-        
+
+    # No need to re-check ban status here; @check_ban handles it
+
     if user_id in active_sequences:
-        await message.reply_text("Hᴇʏ ᴅᴜᴅᴇ...!! A sᴇǫᴜᴇɴᴄᴇ ɪs ᴀʟʀᴇᴀᴅʏ ᴀᴄᴛɪᴠᴇ! Usᴇ /end_sequence ᴛᴏ ᴇɴᴅ ɪᴛ.")
+        await message.reply_text(
+            "Hᴇʏ ᴅᴜᴅᴇ...!! A sᴇǫᴜᴇɴᴄᴇ ɪs ᴀʟʀᴇᴀᴅʏ ᴀᴄᴛɪᴠᴇ! Usᴇ /end_sequence ᴛᴏ ᴇɴᴅ ɪᴛ."
+        )
     else:
         active_sequences[user_id] = []
         message_ids[user_id] = []
-        msg = await message.reply_text("Sᴇǫᴜᴇɴᴄᴇ sᴛᴀʀᴛᴇᴅ! Sᴇɴᴅ ʏᴏᴜʀ ғɪʟᴇs ɴᴏᴡ ʙʀᴏ....Fᴀsᴛ")
+        msg = await message.reply_text(
+            "Sᴇǫᴜᴇɴᴄᴇ sᴛᴀʀᴛᴇᴅ! Sᴇɴᴅ ʏᴏᴜʀ ғɪʟᴇs ɴᴏᴡ ʙʀᴏ....Fᴀsᴛ"
+        )
         message_ids[user_id].append(msg.message_id)
+
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
