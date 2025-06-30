@@ -180,14 +180,14 @@ async def auto_rename_files(client, message):
             "ext": original_name.split('.')[-1]
         }
 
-    else:
+     else
      
 
     # Ban check is already handled by @check_ban
 
     # Your normal logic below here...
     # Example:
-    await message.reply_text("File received. Processing...")
+       await message.reply_text("File received. Processing...")
 
     # Your renaming logic continues...
 
@@ -218,6 +218,35 @@ async def auto_rename_files(client, message):
 
     # Not in sequence: Create concurrent task for auto renaming
     asyncio.create_task(auto_rename_file(client, message, file_info))
+
+@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
+@check_ban
+async def handle_incoming_file(client, message: Message):
+    user_id = message.from_user.id
+
+    # Check user's rename mode from database (default is auto)
+    user_mode = await codeflixbots.get_user_mode(user_id)
+    file_name = message.document.file_name if message.document else message.video.file_name if message.video else message.audio.file_name
+    ext = file_name.split('.')[-1]
+
+    if user_mode == "manual":
+        # Store file temporarily for manual rename
+        codeflixbots.temp_files[user_id] = {
+            "message": message,
+            "ext": ext
+        }
+
+        # Reply with copyable file name and instructions
+        await message.reply_text(
+            f"📝 Send me the new name (without extension).\n\n"
+            f"📎 Original filename: `{file_name}`\n\n"
+            f"Just reply with the name you want (e.g. `Episode 1`)."
+        )
+    else:
+        # Proceed with auto rename
+        from plugins.functions.rename import auto_rename
+        await auto_rename(client, message)
+
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
