@@ -218,28 +218,44 @@ async def handle_manual_reply(client: Client, message: Message):
     ext = temp["ext"]
     new_name = f"{message.text.strip()}.{ext}"
 
-    # Determine the file_id safely
     media = old_message.document or old_message.video or old_message.audio
     if not media:
         await message.reply_text("❌ Could not determine media type.")
         return
 
     file_id = media.file_id
-
+    mime_type = media.mime_type
     msg = await message.reply_text(f"🔄 Renaming to `{new_name}`...")
 
     try:
-        await client.send_document(
-            chat_id=message.chat.id,
-            document=file_id,
-            file_name=new_name,
-            caption=None,
-            reply_to_message_id=old_message.message_id  # Reply to the original message
-        )
+        if old_message.document:
+            await client.send_document(
+                chat_id=message.chat.id,
+                document=file_id,
+                file_name=new_name,
+                caption=None,
+                reply_to_message_id=old_message.message_id
+            )
+        elif old_message.video:
+            await client.send_video(
+                chat_id=message.chat.id,
+                video=file_id,
+                file_name=new_name,
+                caption=None,
+                supports_streaming=True,
+                reply_to_message_id=old_message.message_id
+            )
+        elif old_message.audio:
+            await client.send_audio(
+                chat_id=message.chat.id,
+                audio=file_id,
+                file_name=new_name,
+                caption=None,
+                reply_to_message_id=old_message.message_id
+            )
         await msg.edit_text("✅ File renamed and sent.")
     except Exception as e:
         await msg.edit_text(f"❌ Failed to send file.\nError: `{e}`")
-
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
