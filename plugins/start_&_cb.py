@@ -10,7 +10,6 @@ from config import Config
 from functools import wraps
 
 
-app.run()  # app आपका Pyrogram Client है
 ADMIN_URL = Config.ADMIN_URL
 
 
