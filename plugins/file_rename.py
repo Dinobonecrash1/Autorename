@@ -10,10 +10,11 @@ from pyrogram.types import Message
 from plugins.antinsfw import check_anti_nsfw
 from helper.utils import progress_for_pyrogram, humanbytes, convert
 from helper.database import codeflixbots
-from config import ADMIN_URL, Config
+from config import Config
 from functools import wraps
 
 
+admin_url = Config.ADMIN_URL
 
 active_sequences = {}
 message_ids = {}
