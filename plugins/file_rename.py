@@ -168,30 +168,7 @@ async def file_entry_point(client: Client, message: Message):
     else:
         await handle_auto_mode(client, message)
      
-async def handle_manual_mode(client, message: Message):
-    user_id = message.from_user.id
-    media = message.document or message.video or message.audio
 
-    if not media:
-        await message.reply_text("❌ Unsupported media type.")
-        return
-
-    file_name = media.file_name or f"file.{media.mime_type.split('/')[-1]}"
-    ext = file_name.split('.')[-1] if '.' in file_name else ''
-    
-    codeflixbots.temp_files[user_id] = {
-        "message": message,
-        "file_name": file_name,
-        "file_type": media.mime_type,
-        "ext": ext
-    }
-
-    await message.reply_text(
-        f"📝 **Original File Name:**\n`{file_name}`\n\n"
-        "Please reply with the **new name (without extension)**."
-    )
-
- 
 async def handle_auto_mode(client, message: Message):
     user_id = message.from_user.id
     media = message.document or message.video or message.audio
@@ -213,40 +190,6 @@ async def handle_auto_mode(client, message: Message):
         asyncio.create_task(auto_rename_file(client, message, file_info))
 
 @Client.on_message(filters.private & filters.reply & filters.text)
-async def handle_manual_reply(client: Client, message: Message):
-    user_id = message.from_user.id
-    if user_id not in codeflixbots.temp_files:
-        return
-
-    # Extract original file data
-    temp = codeflixbots.temp_files.pop(user_id)
-    ext = temp["ext"]
-    original_message = temp["message"]
-    new_base_name = message.text.strip()
-    new_name = f"{new_base_name}.{ext}"
-
-    # Save the temp name for metadata handling
-    codeflixbots.temp_files[user_id] = {
-        "message": original_message,
-        "file_name": new_name,
-        "file_type": temp["file_type"],
-        "ext": ext
-    }
-
-    media = original_message.document or original_message.video or original_message.audio
-
-    # Determine file type options
-    buttons = [[InlineKeyboardButton("📁 Document", callback_data="upload_document")]]
-    if original_message.video:
-        buttons.append([InlineKeyboardButton("🎥 Video", callback_data="upload_video")])
-    elif original_message.audio:
-        buttons.append([InlineKeyboardButton("🎵 Audio", callback_data="upload_audio")])
-
-    await message.reply(
-        f"Select the Output File Type\n• File Name :-  {new_name}",
-        reply_markup=InlineKeyboardMarkup(buttons),
-        reply_to_message_id=original_message.id
-    )
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
