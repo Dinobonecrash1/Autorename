@@ -5,7 +5,7 @@ import shutil
 import asyncio
 from datetime import datetime
 from PIL import Image
-from pyrogram import filters
+from pyrogram import Client, filters  # Added Client import
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from plugins.antinsfw import check_anti_nsfw
 from helper.utils import progress_for_pyrogram, humanbytes, convert
