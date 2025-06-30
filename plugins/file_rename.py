@@ -160,6 +160,28 @@ async def start_sequence(client, message: Message):
 @check_ban
 async def auto_rename_files(client, message):
     user_id = message.from_user.id
+    mode = await codeflixbots.get_rename_mode(user_id)
+
+    media = message.document or message.video or message.audio
+    original_name = media.file_name
+
+    if mode == "manual":
+        await message.reply_text(
+            f"📝 **Original File Name:**\n`{original_name}`\n\nPlease send the new name (without extension).",
+            quote=True,
+            reply_to_message_id=message.id
+        )
+
+        # Temporarily store file info for manual renaming
+        codeflixbots.temp_files[user_id] = {
+            "message": message,
+            "file_name": original_name,
+            "file_type": media.mime_type,
+            "ext": original_name.split('.')[-1]
+        }
+
+    else:
+     
 
     # Ban check is already handled by @check_ban
 
