@@ -6,8 +6,10 @@ from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, 
 
 from helper.database import codeflixbots
 from config import *
-from config import ADMIN_URL, Config
+from config import Config
 from functools import wraps
+
+admin_url = Config.ADMIN_URL
 
 
 def check_ban(func):
