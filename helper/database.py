@@ -209,5 +209,19 @@ class Database:
     async def get_banned_users():
         return db.banned_users.find()
 
+# In helper/database.py
+    async def set_rename_mode(user_id, mode):
+        await codeflixbots.col.update_one(
+              {"_id": user_id},
+              {"$set": {"rename_mode": mode}},
+              upsert=True
+         )
+
+    async def get_rename_mode(user_id):
+        user = await codeflixbots.col.find_one({"_id": user_id})
+        return user.get("rename_mode", "auto")  # default to auto
+
+
+
 
 codeflixbots = Database(Config.DB_URL, Config.DB_NAME)
