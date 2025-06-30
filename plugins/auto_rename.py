@@ -3,7 +3,6 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from helper.database import codeflixbots
 from functools import wraps
 
-codeflixbots.temp_files = {}
 
 
 def check_ban(func):
