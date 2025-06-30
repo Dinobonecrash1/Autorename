@@ -222,43 +222,51 @@ async def handle_manual_reply(client: Client, message: Message):
     ext = temp["ext"]
     new_name = f"{message.text.strip()}.{ext}"
 
-    file_info = {
-        "file_id": (
-            temp["message"].document.file_id if temp["message"].document else
-            temp["message"].video.file_id if temp["message"].video else
-            temp["message"].audio.file_id
-        ),
-        "file_name": new_name,
-        "message": temp["message"]
-    }
+    original_message = temp["message"]
+
+    # Safely get the file_id
+    if original_message.document:
+        file_id = original_message.document.file_id
+    elif original_message.video:
+        file_id = original_message.video.file_id
+    elif original_message.audio:
+        file_id = original_message.audio.file_id
+    else:
+        await message.reply_text("❌ Unsupported file type.")
+        return
 
     msg = await message.reply_text(f"🔄 Renaming to `{new_name}`...")
 
     try:
-        if temp["message"].document:
-    await client.send_document(
-        chat_id=message.chat.id,
-        document=file_info["file_id"],
-        file_name=new_name,
-        caption=None,
-        reply_to_message_id=temp["message"].message_id
-    )
-elif temp["message"].video:
-    await client.send_video(
-        chat_id=message.chat.id,
-        video=file_info["file_id"],
-        file_name=new_name,
-        caption=None,
-        reply_to_message_id=temp["message"].message_id
-    )
-elif temp["message"].audio:
-    await client.send_audio(
-        chat_id=message.chat.id,
-        audio=file_info["file_id"],
-        file_name=new_name,
-        caption=None,
-        reply_to_message_id=temp["message"].message_id
-    )
+        if original_message.document:
+            await client.send_document(
+                chat_id=message.chat.id,
+                document=file_id,
+                file_name=new_name,
+                caption=None,
+                reply_to_message_id=original_message.id
+            )
+        elif original_message.video:
+            await client.send_video(
+                chat_id=message.chat.id,
+                video=file_id,
+                file_name=new_name,
+                caption=None,
+                reply_to_message_id=original_message.id
+            )
+        elif original_message.audio:
+            await client.send_audio(
+                chat_id=message.chat.id,
+                audio=file_id,
+                file_name=new_name,
+                caption=None,
+                reply_to_message_id=original_message.id
+            )
+
+        await msg.edit_text("✅ Renamed and sent successfully!")
+    except Exception as e:
+        await msg.edit_text(f"❌ Failed to send renamed file.\n**Error:** `{e}`")
+
 
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
