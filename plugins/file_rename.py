@@ -158,94 +158,77 @@ async def start_sequence(client, message: Message):
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
-async def auto_rename_files(client, message):
+async def file_entry_point(client: Client, message: Message):
     user_id = message.from_user.id
     mode = await codeflixbots.get_rename_mode(user_id)
 
-    media = message.document or message.video or message.audio
-    original_name = media.file_name
-
     if mode == "manual":
-        await message.reply_text(
-            f"📝 **Original File Name:**\n`{original_name}`\n\nPlease send the new name (without extension).",
-            quote=True,
-            reply_to_message_id=message.id
-        )
-
-        # Temporarily store file info for manual renaming
-        codeflixbots.temp_files[user_id] = {
-            "message": message,
-            "file_name": original_name,
-            "file_type": media.mime_type,
-            "ext": original_name.split('.')[-1]
-        }
-
-     else
+        await handle_manual_mode(client, message)
+    else:
+        await handle_auto_mode(client, message)
      
+async def handle_manual_mode(client, message: Message):
+    user_id = message.from_user.id
+    media = message.document or message.video or message.audio
+    file_name = media.file_name
+    ext = file_name.split('.')[-1]
 
-    # Ban check is already handled by @check_ban
+    codeflixbots.temp_files[user_id] = {
+        "message": message,
+        "file_name": file_name,
+        "file_type": media.mime_type,
+        "ext": ext
+    }
 
-    # Your normal logic below here...
-    # Example:
-       await message.reply_text("File received. Processing...")
-
-    # Your renaming logic continues...
-
-  
-        
-    file_id = (
-        message.document.file_id if message.document else
-        message.video.file_id if message.video else
-        message.audio.file_id
+    await message.reply_text(
+        f"📝 **Original File Name:**\n`{file_name}`\n\n"
+        "Please send the new name (without extension)."
     )
-    file_name = (
-        message.document.file_name if message.document else
-        message.video.file_name if message.video else
-        message.audio.file_name
-    )
+ 
+async def handle_auto_mode(client, message: Message):
+    user_id = message.from_user.id
+    media = message.document or message.video or message.audio
+    file_name = media.file_name
+
     file_info = {
-        "file_id": file_id, 
+        "file_id": media.file_id,
         "file_name": file_name if file_name else "Unknown",
-        "message": message,  # Store the entire message for later processing
+        "message": message,
         "episode_num": extract_episode_number(file_name if file_name else "Unknown")
     }
 
     if user_id in active_sequences:
         active_sequences[user_id].append(file_info)
-        reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
+        reply_msg = await message.reply_text("📦 File received! Use /end_sequence to finish.")
         message_ids[user_id].append(reply_msg.message_id)
+    else:
+        await message.reply_text("🔁 File received. Processing...")
+        asyncio.create_task(auto_rename_file(client, message, file_info))
+
+@Client.on_message(filters.private & filters.reply & filters.text)
+async def handle_manual_reply(client: Client, message: Message):
+    user_id = message.from_user.id
+    if user_id not in codeflixbots.temp_files:
         return
 
-    # Not in sequence: Create concurrent task for auto renaming
-    asyncio.create_task(auto_rename_file(client, message, file_info))
+    temp = codeflixbots.temp_files.pop(user_id)
+    ext = temp["ext"]
+    new_name = f"{message.text.strip()}.{ext}"
 
-@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
-@check_ban
-async def handle_incoming_file(client, message: Message):
-    user_id = message.from_user.id
+    file_info = {
+        "file_id": (
+            temp["message"].document.file_id if temp["message"].document else
+            temp["message"].video.file_id if temp["message"].video else
+            temp["message"].audio.file_id
+        ),
+        "file_name": new_name,
+        "message": temp["message"]
+    }
 
-    # Check user's rename mode from database (default is auto)
-    user_mode = await codeflixbots.get_user_mode(user_id)
-    file_name = message.document.file_name if message.document else message.video.file_name if message.video else message.audio.file_name
-    ext = file_name.split('.')[-1]
+    await message.reply_text(f"🔄 Renaming to `{new_name}`...")
+    asyncio.create_task(auto_rename_file(client, temp["message"], file_info))
 
-    if user_mode == "manual":
-        # Store file temporarily for manual rename
-        codeflixbots.temp_files[user_id] = {
-            "message": message,
-            "ext": ext
-        }
 
-        # Reply with copyable file name and instructions
-        await message.reply_text(
-            f"📝 Send me the new name (without extension).\n\n"
-            f"📎 Original filename: `{file_name}`\n\n"
-            f"Just reply with the name you want (e.g. `Episode 1`)."
-        )
-    else:
-        # Proceed with auto rename
-        from plugins.functions.rename import auto_rename
-        await auto_rename(client, message)
 
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
