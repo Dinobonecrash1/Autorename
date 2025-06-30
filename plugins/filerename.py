@@ -15,7 +15,7 @@ from helper.utils import add_prefix_suffix
 from config import Config
 
 app = Client("test", api_id=Config.STRING_API_ID,
-             api_hash=Config.STRING_API_HASH, 
+             api_hash=Config.STRING_API_HASH)
 
 pending_manual_rename = {}  # Store pending manual rename requests
 
