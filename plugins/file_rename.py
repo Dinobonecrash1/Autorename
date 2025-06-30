@@ -228,7 +228,7 @@ async def handle_manual_reply(client: Client, message: Message):
 
     msg = await message.reply_text(f"🔄 Renaming to `{new_name}`...")
 
-  try:
+ try:
        await client.send_document(
           chat_id=message.chat.id,
           document=file_info["file_id"],
