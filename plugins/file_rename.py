@@ -161,6 +161,7 @@ async def start_sequence(client, message: Message):
 async def file_entry_point(client: Client, message: Message):
     user_id = message.from_user.id
     mode = await codeflixbots.get_rename_mode(user_id)
+    print(f"[DEBUG] rename mode: {mode}")  # <-- Add this for confirmation
 
     if mode == "manual":
         await handle_manual_mode(client, message)
