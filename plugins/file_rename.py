@@ -12,7 +12,7 @@ from helper.utils import progress_for_pyrogram, humanbytes, convert
 from helper.database import codeflixbots
 from config import Config
 from functools import wraps
-
+from pyrogram.enums import MessageMediaType
 
 ADMIN_URL = Config.ADMIN_URL
 
@@ -218,56 +218,35 @@ async def handle_manual_reply(client: Client, message: Message):
     if user_id not in codeflixbots.temp_files:
         return
 
+    # Extract original file data
     temp = codeflixbots.temp_files.pop(user_id)
     ext = temp["ext"]
-    new_name = f"{message.text.strip()}.{ext}"
-
     original_message = temp["message"]
+    new_base_name = message.text.strip()
+    new_name = f"{new_base_name}.{ext}"
 
-    # Safely get the file_id
-    if original_message.document:
-        file_id = original_message.document.file_id
-    elif original_message.video:
-        file_id = original_message.video.file_id
+    # Save the temp name for metadata handling
+    codeflixbots.temp_files[user_id] = {
+        "message": original_message,
+        "file_name": new_name,
+        "file_type": temp["file_type"],
+        "ext": ext
+    }
+
+    media = original_message.document or original_message.video or original_message.audio
+
+    # Determine file type options
+    buttons = [[InlineKeyboardButton("📁 Document", callback_data="upload_document")]]
+    if original_message.video:
+        buttons.append([InlineKeyboardButton("🎥 Video", callback_data="upload_video")])
     elif original_message.audio:
-        file_id = original_message.audio.file_id
-    else:
-        await message.reply_text("❌ Unsupported file type.")
-        return
+        buttons.append([InlineKeyboardButton("🎵 Audio", callback_data="upload_audio")])
 
-    msg = await message.reply_text(f"🔄 Renaming to `{new_name}`...")
-
-    try:
-        if original_message.document:
-            await client.send_document(
-                chat_id=message.chat.id,
-                document=file_id,
-                file_name=new_name,
-                caption=None,
-                reply_to_message_id=original_message.id
-            )
-        elif original_message.video:
-            await client.send_video(
-                chat_id=message.chat.id,
-                video=file_id,
-                file_name=new_name,
-                caption=None,
-                reply_to_message_id=original_message.id
-            )
-        elif original_message.audio:
-            await client.send_audio(
-                chat_id=message.chat.id,
-                audio=file_id,
-                file_name=new_name,
-                caption=None,
-                reply_to_message_id=original_message.id
-            )
-
-        await msg.edit_text("✅ Renamed and sent successfully!")
-    except Exception as e:
-        await msg.edit_text(f"❌ Failed to send renamed file.\n**Error:** `{e}`")
-
-
+    await message.reply(
+        f"Select the Output File Type\n• File Name :-  {new_name}",
+        reply_markup=InlineKeyboardMarkup(buttons),
+        reply_to_message_id=original_message.id
+    )
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
