@@ -186,7 +186,6 @@ async def handle_auto_mode(client, message: Message):
         reply_msg = await message.reply_text("📦 File received! Use /end_sequence to finish.")
         message_ids[user_id].append(reply_msg.message_id)
     else:
-        await message.reply_text("🔁 File received. Processing...")
         asyncio.create_task(auto_rename_file(client, message, file_info))
 
 @Client.on_message(filters.private & filters.reply & filters.text)
