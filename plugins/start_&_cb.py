@@ -8,7 +8,9 @@ from helper.database import codeflixbots
 from config import *
 from config import Config
 from functools import wraps
-
+from file_rename import *
+from filerename import *
+app.run()  # app आपका Pyrogram Client है
 ADMIN_URL = Config.ADMIN_URL
 
 
