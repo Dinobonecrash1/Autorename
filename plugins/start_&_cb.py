@@ -15,6 +15,19 @@ app = Client("my_bot")
 app.run()  # app आपका Pyrogram Client है
 ADMIN_URL = Config.ADMIN_URL
 
+import importlib.util
+import os
+
+# file_rename.py का पथ
+file_rename_path = os.path.join(os.path.dirname(__file__), 'file_rename.py')
+
+# मॉड्यूल लोड करें
+spec = importlib.util.spec_from_file_location("file_rename", file_rename_path)
+file_rename = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(file_rename)
+
+# अब आप file_rename के फंक्शंस का उपयोग कर सकते हैं
+# उदाहरण: file_rename.auto_rename_files
 
 def check_ban(func):
     @wraps(func)
