@@ -13,8 +13,8 @@ import os
 import time
 from config import Config
 
-app = Client("test", api_id=Config.STRING_API_ID,
-             api_hash=Config.STRING_API_HASH)
+app = Client("test", api_id=Config.API_ID,
+             api_hash=Config.API_HASH)
 
 pending_manual_rename = {}  # Store pending manual rename requests
 
