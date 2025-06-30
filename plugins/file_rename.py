@@ -6,7 +6,7 @@ import asyncio
 from datetime import datetime
 from PIL import Image
 from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from plugins.antinsfw import check_anti_nsfw
 from helper.utils import progress_for_pyrogram, humanbytes, convert
 from helper.database import codeflixbots
@@ -24,9 +24,6 @@ renaming_operations = {}
 download_semaphore = asyncio.Semaphore(5)  # Allow 5 concurrent downloads
 upload_semaphore = asyncio.Semaphore(3)    # Allow 3 concurrent uploads
 
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
- # Ensure you import the variable from your config
-
 def check_ban(func):
     @wraps(func)
     async def wrapper(client, message, *args, **kwargs):
@@ -43,7 +40,6 @@ def check_ban(func):
         return await func(client, message, *args, **kwargs)
     return wrapper
 
-    
 def detect_quality(file_name):
     quality_order = {"480p": 1, "720p": 2, "1080p": 3}
     match = re.search(r"(480p|720p|1080p)", file_name)
@@ -59,10 +55,6 @@ def extract_season_number(filename):
         if match:
             return int(match.group(1))
     return 1  # Default to season 1 if not found
-    
-import re
-
-import re
 
 def extract_audio_type(filename: str) -> str:
     if not filename or not isinstance(filename, str):
@@ -70,16 +62,13 @@ def extract_audio_type(filename: str) -> str:
     
     lower = filename.lower()
     
-    # Check for explicit "Multi Audio" or "Dual Audio" in the filename
     if "multi audio" in lower:
         return "Multi Audio"
     if "dual audio" in lower:
         return "Dual Audio"
     
-    # List of specific languages to check
     specific_languages = {'japanese', 'english', 'hindi', 'tamil', 'telugu'}
     
-    # Check for specific languages in the filename (outside or inside braces)
     found_languages = set()
     for lang in specific_languages:
         if lang in lower:
@@ -87,7 +76,6 @@ def extract_audio_type(filename: str) -> str:
     
     lang_count = len(found_languages)
     
-    # If specific languages are found
     if lang_count >= 3:
         return "Multi Audio"
     elif lang_count == 2:
@@ -95,7 +83,6 @@ def extract_audio_type(filename: str) -> str:
     elif lang_count == 1:
         return "Single Audio"
     
-    # Fallback to checking languages inside curly braces
     match = re.search(r"\{([^\}]*)\}", lower)
     if not match or not match.group(1).strip():
         return "Unknown"
@@ -112,10 +99,8 @@ def extract_audio_type(filename: str) -> str:
         return "Single Audio"
     else:
         return "Unknown"
-    
 
 def extract_episode_number(filename):
-    """Extract episode number from filename for sorting"""
     pattern1 = re.compile(r'S(\d+)(?:E|EP)(\d+)')
     pattern2 = re.compile(r'S(\d+)\s*(?:E|EP|-\s*EP)(\d+)')
     pattern3 = re.compile(r'(?:[([<{]?\s*(?:E|EP)\s*(\d+)\s*[)\]>}]?)')
@@ -123,26 +108,21 @@ def extract_episode_number(filename):
     pattern4 = re.compile(r'S(\d+)[^\d]*(\d+)', re.IGNORECASE)
     patternX = re.compile(r'(\d+)')
     
-    # Try each pattern in order of specificity
     for pattern in [pattern1, pattern2, pattern3, pattern3_2, pattern4]:
         match = re.search(pattern, filename)
         if match:
-            return int(match.groups()[-1])  # Return the last captured group as episode number
+            return int(match.groups()[-1])
     
-    # Fallback to any number in filename
     match = re.search(patternX, filename)
     if match:
         return int(match.group(1))
     
-    return 999  # Default high number for files without episode numbers
+    return 999
 
 @Client.on_message(filters.command("start_sequence") & filters.private)
 @check_ban
 async def start_sequence(client, message: Message):
     user_id = message.from_user.id
-
-    # No need to re-check ban status here; @check_ban handles it
-
     if user_id in active_sequences:
         await message.reply_text(
             "Hᴇʏ ᴅᴜᴅᴇ...!! A sᴇǫᴜᴇɴᴄᴇ ɪs ᴀʟʀᴇᴀᴅʏ ᴀᴄᴛɪᴠᴇ! Usᴇ /end_sequence ᴛᴏ ᴇɴᴅ ɪᴛ."
@@ -154,7 +134,6 @@ async def start_sequence(client, message: Message):
             "Sᴇǫᴜᴇɴᴄᴇ sᴛᴀʀᴛᴇᴅ! Sᴇɴᴅ ʏᴏᴜʀ ғɪʟᴇs ɴᴏᴡ ʙʀᴏ....Fᴀsᴛ"
         )
         message_ids[user_id].append(msg.message_id)
-
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
@@ -171,19 +150,24 @@ async def auto_rename_files(client, message):
         message.audio.file_name
     )
     file_info = {
-        "file_id": file_id, 
+        "file_id": file_id,
         "file_name": file_name if file_name else "Unknown",
-        "message": message,  # Store the entire message for later processing
+        "message": message,
         "episode_num": extract_episode_number(file_name if file_name else "Unknown")
     }
 
+    rename_mode = await codeflixbots.get_rename_mode(user_id)
+    
     if user_id in active_sequences:
         active_sequences[user_id].append(file_info)
         reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
         message_ids[user_id].append(reply_msg.message_id)
         return
 
-    # Not in sequence: Create concurrent task for auto renaming
+    if rename_mode == "manual":
+        # Skip auto rename and let filerename.py handle it
+        return
+
     asyncio.create_task(auto_rename_file(client, message, file_info))
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
@@ -201,31 +185,20 @@ async def end_sequence(client, message: Message):
     if not file_list:
         await message.reply_text("Nᴏ ғɪʟᴇs ᴡᴇʀᴇ sᴇɴᴛ ɪɴ ᴛʜɪs sᴇǫᴜᴇɴᴄᴇ....ʙʀᴏ...!!")
     else:
-        # Sort files by episode number for proper sequence
         file_list.sort(key=lambda x: x["episode_num"])
-        
         await message.reply_text(f"Sᴇǫᴜᴇɴᴄᴇ ᴇɴᴅᴇᴅ. Nᴏᴡ sᴇɴᴅɪɴɢ ʏᴏᴜʀ {count} ғɪʟᴇ(s) ʙᴀᴄᴋ ɪɴ sᴇǫᴜᴇɴᴄᴇ...!!")
         
-        # Send files back one by one in sequence WITHOUT processing
+        rename_mode = await codeflixbots.get_rename_mode(user_id)
+        
         for index, file_info in enumerate(file_list, 1):
             try:
-                await asyncio.sleep(0.5)  # Small delay to maintain sequence order
+                await asyncio.sleep(0.5)
                 
-                # Send the original file back without any modification
-                if file_info["message"].document:
+                if rename_mode == "manual":
+                    # Skip auto rename and let filerename.py handle it
+                    return
+                else:
                     await client.send_document(
-                        message.chat.id,
-                        file_info["file_id"],
-                        caption=f"{file_info['file_name']}"
-                    )
-                elif file_info["message"].video:
-                    await client.send_video(
-                        message.chat.id,
-                        file_info["file_id"],
-                        caption=f"{file_info['file_name']}"
-                    )
-                elif file_info["message"].audio:
-                    await client.send_audio(
                         message.chat.id,
                         file_info["file_id"],
                         caption=f"{file_info['file_name']}"
@@ -234,9 +207,9 @@ async def end_sequence(client, message: Message):
             except Exception as e:
                 await message.reply_text(f"Fᴀɪʟᴇᴅ ᴛᴏ sᴇɴᴅ ғɪʟᴇ: {file_info.get('file_name', '')}\n{e}")
         
-        await message.reply_text(f"✅ Aʟʟ {count} ғɪʟᴇs sᴇɴᴛ sᴜᴄᴄᴇssғᴜʟʟʏ ɪɴ sᴇǫᴜᴇɴᴄᴇ!")
+        if rename_mode != "manual":
+            await message.reply_text(f"✅ Aʟʟ {count} ғɪʟᴇs sᴇɴᴛ sᴜᴄᴄᴇssғᴜʟʟʏ ɪɴ sᴇǫᴜᴇɴᴄᴇ!")
 
-    # Clean up messages
     try:
         await client.delete_messages(chat_id=message.chat.id, message_ids=delete_messages)
     except Exception as e:
@@ -313,7 +286,6 @@ async def get_audio_track_type(file_path):
         return "Unknown"
 
 async def process_thumb(ph_path):
-    # Offload PIL image work to a thread for real concurrency
     def _resize_thumb(path):
         img = Image.open(path).convert("RGB")
         img = img.resize((320, 320))
@@ -321,7 +293,6 @@ async def process_thumb(ph_path):
     await asyncio.to_thread(_resize_thumb, ph_path)
 
 async def concurrent_download(client, message, renamed_file_path, progress_msg):
-    """Handle concurrent downloading with semaphore"""
     async with download_semaphore:
         try:
             path = await client.download_media(
@@ -335,7 +306,6 @@ async def concurrent_download(client, message, renamed_file_path, progress_msg):
             raise Exception(f"Download Error: {e}")
 
 async def concurrent_upload(client, message, path, media_type, caption, ph_path, progress_msg):
-    """Handle concurrent uploading with semaphore"""
     async with upload_semaphore:
         try:
             if media_type == "document":
@@ -431,11 +401,9 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                         del renaming_operations[file_id]
                         return
                     template = template.replace(quality_placeholder, "".join(extracted_qualities))
-                  # audio add path 
             audio_type = extract_audio_type(file_name)
             template = template.replace("{audio}", audio_type)
-                
-              #continue with renaming
+
         _, file_extension = os.path.splitext(file_name)
         renamed_file_name = f"{template}{file_extension}"
         renamed_file_path = f"downloads/{renamed_file_name}"
@@ -452,7 +420,6 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
         ph_path = None
 
         try:
-            # Use concurrent download with semaphore
             path = await concurrent_download(client, message, renamed_file_path, download_msg)
         except Exception as e:
             del renaming_operations[file_id]
@@ -493,7 +460,6 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
 
             path = metadata_file_path
             
-            
             upload_msg = await download_msg.edit("Wᴇᴡ... Iᴀᴍ Uᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
 
             c_caption = await codeflixbots.get_caption(message.chat.id)
@@ -518,7 +484,6 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                 await process_thumb(ph_path)
 
             try:
-                # Use concurrent upload with semaphore
                 await concurrent_upload(client, message, path, media_type, caption, ph_path, upload_msg)
             except Exception as e:
                 if os.path.exists(renamed_file_path):
@@ -528,13 +493,11 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                 del renaming_operations[file_id]
                 return await upload_msg.edit(str(e))
 
-            # Delete the download message only if not in sequence mode
             if not is_sequence:
                 await download_msg.delete()
             else:
                 await download_msg.edit(f"✅ Cᴏᴍᴘʟᴇᴛᴇᴅ: {renamed_file_name}")
 
-            # Clean up files
             if os.path.exists(path):
                 os.remove(path)
             if ph_path and os.path.exists(ph_path):
