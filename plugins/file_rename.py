@@ -13,6 +13,7 @@ from helper.database import codeflixbots
 from config import Config
 from functools import wraps
 from pyrogram.enums import MessageMediaType
+from filerename import initiate_manual_rename  # Import manual rename handler
 
 ADMIN_URL = Config.ADMIN_URL
 
@@ -165,7 +166,8 @@ async def auto_rename_files(client, message):
         return
 
     if rename_mode == "manual":
-        # Skip auto rename and let filerename.py handle it
+        # Delegate to filerename.py for manual handling
+        await initiate_manual_rename(client, message)
         return
 
     asyncio.create_task(auto_rename_file(client, message, file_info))
@@ -195,8 +197,8 @@ async def end_sequence(client, message: Message):
                 await asyncio.sleep(0.5)
                 
                 if rename_mode == "manual":
-                    # Skip auto rename and let filerename.py handle it
-                    return
+                    # Delegate to filerename.py for manual handling
+                    await initiate_manual_rename(client, file_info["message"])
                 else:
                     await client.send_document(
                         message.chat.id,
