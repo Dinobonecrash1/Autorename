@@ -176,7 +176,7 @@ async def handle_manual_mode(client, message: Message):
         await message.reply_text("❌ Unsupported media type.")
         return
 
-    file_name = media.file_name
+    file_name = media.file_name or f"file.{media.mime_type.split('/')[-1]}"
     ext = file_name.split('.')[-1] if '.' in file_name else ''
     
     codeflixbots.temp_files[user_id] = {
@@ -235,16 +235,30 @@ async def handle_manual_reply(client: Client, message: Message):
     msg = await message.reply_text(f"🔄 Renaming to `{new_name}`...")
 
     try:
-        await client.send_document(
-            chat_id=message.chat.id,
-            document=file_info["file_id"],
-            file_name=new_name,
-            caption=None,
-            reply_to_message_id=temp["message"].message_id  # ✅ FIXED LINE
-        )
-        await msg.edit_text("✅ File renamed and sent.")
-    except Exception as e:
-        await msg.edit_text(f"❌ Failed to send file.\nError: `{e}`")
+        if temp["message"].document:
+    await client.send_document(
+        chat_id=message.chat.id,
+        document=file_info["file_id"],
+        file_name=new_name,
+        caption=None,
+        reply_to_message_id=temp["message"].message_id
+    )
+elif temp["message"].video:
+    await client.send_video(
+        chat_id=message.chat.id,
+        video=file_info["file_id"],
+        file_name=new_name,
+        caption=None,
+        reply_to_message_id=temp["message"].message_id
+    )
+elif temp["message"].audio:
+    await client.send_audio(
+        chat_id=message.chat.id,
+        audio=file_info["file_id"],
+        file_name=new_name,
+        caption=None,
+        reply_to_message_id=temp["message"].message_id
+    )
 
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
