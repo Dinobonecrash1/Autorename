@@ -9,7 +9,7 @@ from config import *
 from config import Config
 from functools import wraps
 
-admin_url = Config.ADMIN_URL
+ADMIN_URL = Config.ADMIN_URL
 
 
 def check_ban(func):
