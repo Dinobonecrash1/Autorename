@@ -1,18 +1,18 @@
-   import os
-   import re
-   import time
-   import shutil
-   import asyncio
-   from datetime import datetime
-   from PIL import Image
-   from pyrogram import filters
-   from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-   from plugins.antinsfw import check_anti_nsfw
-   from helper.utils import progress_for_pyrogram, humanbytes, convert
-   from helper.database import codeflixbots
-   from config import Config
-   from functools import wraps
-   from pyrogram.enums import MessageMediaType
+import os
+import re
+import time
+import shutil
+import asyncio
+from datetime import datetime
+from PIL import Image
+from pyrogram import filters
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from plugins.antinsfw import check_anti_nsfw
+from helper.utils import progress_for_pyrogram, humanbytes, convert
+from helper.database import codeflixbots
+from config import Config
+from functools import wraps
+from pyrogram.enums import MessageMediaType
 
    try:
        from filerename import rename  # Try to import manual rename handler
@@ -524,4 +524,3 @@
            if 'file_id' in locals() and file_id in renaming_operations:
                del renaming_operations[file_id]
            raise
-
