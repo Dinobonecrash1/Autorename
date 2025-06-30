@@ -14,7 +14,7 @@ from config import Config
 from functools import wraps
 
 
-admin_url = Config.ADMIN_URL
+ADMIN_URL = Config.ADMIN_URL
 
 active_sequences = {}
 message_ids = {}
