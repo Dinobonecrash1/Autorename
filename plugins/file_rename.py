@@ -237,7 +237,7 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
         else:
             # --- AUTO RENAME LOGIC (your full template logic here) ---
             format_template = await codeflixbots.get_format_template(user_id)
-            media_preference = await codeflixbots.get_media_preference(user_id)
+            media_preference = await codeflixbots.get_media_preference(user_id) 
 
             if not format_template:
                 error_msg = "Please Set An Auto Rename Format First Using /autorename"
@@ -293,6 +293,7 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                 template = template.replace("{audio}", audio_type)
             _, file_extension = os.path.splitext(file_name)
             renamed_file_name = f"{template}{file_extension}"
+            renamed_file_name = file_name 
 
               # --- Continue with download and upload logic ---
         renamed_file_path = f"downloads/{renamed_file_name}"
