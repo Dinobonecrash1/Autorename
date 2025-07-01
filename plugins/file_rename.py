@@ -160,7 +160,7 @@ async def start_sequence(client, message: Message):
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
-async def auto_rename_files(client, message):
+async def auto_rename_file(client, message, file_info, is_sequence=False, status_msg=None, manual_rename=False):
     user_id = message.from_user.id
     rename_mode = await codeflixbots.get_rename_mode(user_id)
 
