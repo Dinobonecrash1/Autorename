@@ -248,7 +248,8 @@ async def cancel_rename_cb(client, cb):
     if user_id in pending_renames:
         del pending_renames[user_id]
     await cb.message.edit_text("❌ Rename cancelled.")
- @Client.on_message(filters.private & filters.reply)
+ 
+@Client.on_message(filters.private & filters.reply)
 async def catch_manual_rename_filename(client, message):
     user_id = message.from_user.id
     if user_id not in pending_renames:
