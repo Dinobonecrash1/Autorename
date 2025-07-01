@@ -16,6 +16,10 @@ from pyrogram.enums import MessageMediaType
 
 ADMIN_URL = Config.ADMIN_URL
 
+# Add this at the top of your file for manual mode state:
+pending_renames = {}  # user_id: { 'file_msg_id': int, 'file_msg': ... }
+
+
 active_sequences = {}
 message_ids = {}
 renaming_operations = {}
@@ -60,9 +64,7 @@ def extract_season_number(filename):
             return int(match.group(1))
     return 1  # Default to season 1 if not found
     
-import re
 
-import re
 
 def extract_audio_type(filename: str) -> str:
     if not filename or not isinstance(filename, str):
@@ -155,13 +157,6 @@ async def start_sequence(client, message: Message):
         )
         message_ids[user_id].append(msg.message_id)
 
-
-@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
-@check_ban
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
-# Add this at the top of your file for manual mode state:
-pending_renames = {}  # user_id: { 'file_msg_id': int, 'file_msg': ... }
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
