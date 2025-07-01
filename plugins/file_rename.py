@@ -158,8 +158,17 @@ async def start_sequence(client, message: Message):
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+# Add this at the top of your file for manual mode state:
+pending_renames = {}  # user_id: { 'file_msg_id': int, 'file_msg': ... }
+
+@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
+@check_ban
 async def auto_rename_files(client, message):
     user_id = message.from_user.id
+    rename_mode = await codeflixbots.get_rename_mode(user_id)
+
     file_id = (
         message.document.file_id if message.document else
         message.video.file_id if message.video else
@@ -171,19 +180,49 @@ async def auto_rename_files(client, message):
         message.audio.file_name
     )
     file_info = {
-        "file_id": file_id, 
+        "file_id": file_id,
         "file_name": file_name if file_name else "Unknown",
-        "message": message,  # Store the entire message for later processing
+        "message": message,
         "episode_num": extract_episode_number(file_name if file_name else "Unknown")
     }
 
+    # === MANUAL MODE FLOW ===
+    if rename_mode == "manual":
+        file_size = (
+            message.document.file_size if message.document else
+            message.video.file_size if message.video else
+            message.audio.file_size
+        )
+        kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📝 START RENAME 📝", callback_data=f"start_rename|{message.id}")],
+            [InlineKeyboardButton("❌ CANCEL ❌", callback_data=f"cancel_rename|{message.id}")]
+        ])
+        text = (
+            "<b>WHAT DO YOU WANT ME TO DO WITH THIS FILE.?</b>\n\n"
+            f"<b>FILE NAME :-</b> {file_name}\n"
+            f"<b>FILE SIZE :-</b> {humanbytes(file_size)}"
+        )
+        await message.reply_text(
+            text,
+            reply_markup=kb
+        )
+        # Store pending state for this user (for the reply flow)
+        pending_renames[user_id] = {
+            "file_msg_id": message.id,
+            "file_msg": message
+        }
+        return
+
+    # === SEQUENCE MODE (unchanged) ===
     if user_id in active_sequences:
         active_sequences[user_id].append(file_info)
-        reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
+        reply_msg = await message.reply_text(
+            "Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!"
+        )
         message_ids[user_id].append(reply_msg.message_id)
         return
 
-    # Not in sequence: Create concurrent task for auto renaming
+    # === AUTO RENAME (default) ===
     asyncio.create_task(auto_rename_file(client, message, file_info))
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
