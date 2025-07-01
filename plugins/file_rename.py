@@ -3,20 +3,16 @@ import re
 import time
 import shutil
 import asyncio
-import random
 from datetime import datetime
 from PIL import Image
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ForceReply
-from pyrogram.enums import MessageMediaType
-from hachoir.metadata import extractMetadata
-from hachoir.parser import createParser
+from pyrogram.types import Message
 from plugins.antinsfw import check_anti_nsfw
-from helper.ffmpeg import fix_thumb, take_screen_shot
-from helper.utils import progress_for_pyrogram, convert, humanbytes
+from helper.utils import progress_for_pyrogram, humanbytes, convert
 from helper.database import codeflixbots
 from config import Config
 from functools import wraps
+from pyrogram.enums import MessageMediaType
 
 ADMIN_URL = Config.ADMIN_URL
 
@@ -27,6 +23,9 @@ renaming_operations = {}
 # --- Semaphores for concurrent operations ---
 download_semaphore = asyncio.Semaphore(5)  # Allow 5 concurrent downloads
 upload_semaphore = asyncio.Semaphore(3)    # Allow 3 concurrent uploads
+
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+ # Ensure you import the variable from your config
 
 def check_ban(func):
     @wraps(func)
@@ -44,6 +43,7 @@ def check_ban(func):
         return await func(client, message, *args, **kwargs)
     return wrapper
 
+    
 def detect_quality(file_name):
     quality_order = {"480p": 1, "720p": 2, "1080p": 3}
     match = re.search(r"(480p|720p|1080p)", file_name)
@@ -59,6 +59,10 @@ def extract_season_number(filename):
         if match:
             return int(match.group(1))
     return 1  # Default to season 1 if not found
+    
+import re
+
+import re
 
 def extract_audio_type(filename: str) -> str:
     if not filename or not isinstance(filename, str):
@@ -66,13 +70,16 @@ def extract_audio_type(filename: str) -> str:
     
     lower = filename.lower()
     
+    # Check for explicit "Multi Audio" or "Dual Audio" in the filename
     if "multi audio" in lower:
         return "Multi Audio"
     if "dual audio" in lower:
         return "Dual Audio"
     
+    # List of specific languages to check
     specific_languages = {'japanese', 'english', 'hindi', 'tamil', 'telugu'}
     
+    # Check for specific languages in the filename (outside or inside braces)
     found_languages = set()
     for lang in specific_languages:
         if lang in lower:
@@ -80,6 +87,7 @@ def extract_audio_type(filename: str) -> str:
     
     lang_count = len(found_languages)
     
+    # If specific languages are found
     if lang_count >= 3:
         return "Multi Audio"
     elif lang_count == 2:
@@ -87,6 +95,7 @@ def extract_audio_type(filename: str) -> str:
     elif lang_count == 1:
         return "Single Audio"
     
+    # Fallback to checking languages inside curly braces
     match = re.search(r"\{([^\}]*)\}", lower)
     if not match or not match.group(1).strip():
         return "Unknown"
@@ -103,8 +112,10 @@ def extract_audio_type(filename: str) -> str:
         return "Single Audio"
     else:
         return "Unknown"
+    
 
 def extract_episode_number(filename):
+    """Extract episode number from filename for sorting"""
     pattern1 = re.compile(r'S(\d+)(?:E|EP)(\d+)')
     pattern2 = re.compile(r'S(\d+)\s*(?:E|EP|-\s*EP)(\d+)')
     pattern3 = re.compile(r'(?:[([<{]?\s*(?:E|EP)\s*(\d+)\s*[)\]>}]?)')
@@ -112,18 +123,132 @@ def extract_episode_number(filename):
     pattern4 = re.compile(r'S(\d+)[^\d]*(\d+)', re.IGNORECASE)
     patternX = re.compile(r'(\d+)')
     
+    # Try each pattern in order of specificity
     for pattern in [pattern1, pattern2, pattern3, pattern3_2, pattern4]:
         match = re.search(pattern, filename)
         if match:
-            return int(match.groups()[-1])
+            return int(match.groups()[-1])  # Return the last captured group as episode number
     
+    # Fallback to any number in filename
     match = re.search(patternX, filename)
     if match:
         return int(match.group(1))
     
-    return 999
+    return 999  # Default high number for files without episode numbers
 
-# Regex patterns for quality extraction
+@Client.on_message(filters.command("start_sequence") & filters.private)
+@check_ban
+async def start_sequence(client, message: Message):
+    user_id = message.from_user.id
+
+    # No need to re-check ban status here; @check_ban handles it
+
+    if user_id in active_sequences:
+        await message.reply_text(
+            "Hᴇʏ ᴅᴜᴅᴇ...!! A sᴇǫᴜᴇɴᴄᴇ ɪs ᴀʟʀᴇᴀᴅʏ ᴀᴄᴛɪᴠᴇ! Usᴇ /end_sequence ᴛᴏ ᴇɴᴅ ɪᴛ."
+        )
+    else:
+        active_sequences[user_id] = []
+        message_ids[user_id] = []
+        msg = await message.reply_text(
+            "Sᴇǫᴜᴇɴᴄᴇ sᴛᴀʀᴛᴇᴅ! Sᴇɴᴅ ʏᴏᴜʀ ғɪʟᴇs ɴᴏᴡ ʙʀᴏ....Fᴀsᴛ"
+        )
+        message_ids[user_id].append(msg.message_id)
+
+
+@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
+@check_ban
+async def auto_rename_files(client, message):
+    user_id = message.from_user.id
+    file_id = (
+        message.document.file_id if message.document else
+        message.video.file_id if message.video else
+        message.audio.file_id
+    )
+    file_name = (
+        message.document.file_name if message.document else
+        message.video.file_name if message.video else
+        message.audio.file_name
+    )
+    file_info = {
+        "file_id": file_id, 
+        "file_name": file_name if file_name else "Unknown",
+        "message": message,  # Store the entire message for later processing
+        "episode_num": extract_episode_number(file_name if file_name else "Unknown")
+    }
+
+    if user_id in active_sequences:
+        active_sequences[user_id].append(file_info)
+        reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
+        message_ids[user_id].append(reply_msg.message_id)
+        return
+
+    # Not in sequence: Create concurrent task for auto renaming
+    asyncio.create_task(auto_rename_file(client, message, file_info))
+
+@Client.on_message(filters.command("end_sequence") & filters.private)
+@check_ban
+async def end_sequence(client, message: Message):
+    user_id = message.from_user.id
+    if user_id not in active_sequences:
+        await message.reply_text("Wʜᴀᴛ ᴀʀᴇ ʏᴏᴜ ᴅᴏɪɴɢ ɴᴏ ᴀᴄᴛɪᴠᴇ sᴇǫᴜᴇɴᴄᴇ ғᴏᴜɴᴅ...!!")
+        return
+
+    file_list = active_sequences.pop(user_id, [])
+    delete_messages = message_ids.pop(user_id, [])
+    count = len(file_list)
+
+    if not file_list:
+        await message.reply_text("Nᴏ ғɪʟᴇs ᴡᴇʀᴇ sᴇɴᴛ ɪɴ ᴛʜɪs sᴇǫᴜᴇɴᴄᴇ....ʙʀᴏ...!!")
+    else:
+        # Sort files by episode number for proper sequence
+        file_list.sort(key=lambda x: x["episode_num"])
+        
+        await message.reply_text(f"Sᴇǫᴜᴇɴᴄᴇ ᴇɴᴅᴇᴅ. Nᴏᴡ sᴇɴᴅɪɴɢ ʏᴏᴜʀ {count} ғɪʟᴇ(s) ʙᴀᴄᴋ ɪɴ sᴇǫᴜᴇɴᴄᴇ...!!")
+        
+        # Send files back one by one in sequence WITHOUT processing
+        for index, file_info in enumerate(file_list, 1):
+            try:
+                await asyncio.sleep(0.5)  # Small delay to maintain sequence order
+                
+                # Send the original file back without any modification
+                if file_info["message"].document:
+                    await client.send_document(
+                        message.chat.id,
+                        file_info["file_id"],
+                        caption=f"{file_info['file_name']}"
+                    )
+                elif file_info["message"].video:
+                    await client.send_video(
+                        message.chat.id,
+                        file_info["file_id"],
+                        caption=f"{file_info['file_name']}"
+                    )
+                elif file_info["message"].audio:
+                    await client.send_audio(
+                        message.chat.id,
+                        file_info["file_id"],
+                        caption=f"{file_info['file_name']}"
+                    )
+                
+            except Exception as e:
+                await message.reply_text(f"Fᴀɪʟᴇᴅ ᴛᴏ sᴇɴᴅ ғɪʟᴇ: {file_info.get('file_name', '')}\n{e}")
+        
+        await message.reply_text(f"✅ Aʟʟ {count} ғɪʟᴇs sᴇɴᴛ sᴜᴄᴄᴇssғᴜʟʟʏ ɪɴ sᴇǫᴜᴇɴᴄᴇ!")
+
+    # Clean up messages
+    try:
+        await client.delete_messages(chat_id=message.chat.id, message_ids=delete_messages)
+    except Exception as e:
+        print(f"Error deleting messages: {e}")
+
+# Regex patterns for filename parsing
+pattern1 = re.compile(r'S(\d+)(?:E|EP)(\d+)')
+pattern2 = re.compile(r'S(\d+)\s*(?:E|EP|-\s*EP)(\d+)')
+pattern3 = re.compile(r'(?:[([<{]?\s*(?:E|EP)\s*(\d+)\s*[)\]>}]?)')
+pattern3_2 = re.compile(r'(?:\s*-\s*(\d+)\s*)')
+pattern4 = re.compile(r'S(\d+)[^\d]*(\d+)', re.IGNORECASE)
+patternX = re.compile(r'(\d+)')
 pattern5 = re.compile(r'\b(?:.*?(\d{3,4}[^\dp]*p).*?|.*?(\d{3,4}p))\b', re.IGNORECASE)
 pattern6 = re.compile(r'[([<{]?\s*4k\s*[)\]>}]?', re.IGNORECASE)
 pattern7 = re.compile(r'[([<{]?\s*2k\s*[)\]>}]?', re.IGNORECASE)
@@ -188,6 +313,7 @@ async def get_audio_track_type(file_path):
         return "Unknown"
 
 async def process_thumb(ph_path):
+    # Offload PIL image work to a thread for real concurrency
     def _resize_thumb(path):
         img = Image.open(path).convert("RGB")
         img = img.resize((320, 320))
@@ -195,6 +321,7 @@ async def process_thumb(ph_path):
     await asyncio.to_thread(_resize_thumb, ph_path)
 
 async def concurrent_download(client, message, renamed_file_path, progress_msg):
+    """Handle concurrent downloading with semaphore"""
     async with download_semaphore:
         try:
             path = await client.download_media(
@@ -208,6 +335,7 @@ async def concurrent_download(client, message, renamed_file_path, progress_msg):
             raise Exception(f"Download Error: {e}")
 
 async def concurrent_upload(client, message, path, media_type, caption, ph_path, progress_msg):
+    """Handle concurrent uploading with semaphore"""
     async with upload_semaphore:
         try:
             if media_type == "document":
@@ -217,7 +345,7 @@ async def concurrent_upload(client, message, path, media_type, caption, ph_path,
                     thumb=ph_path,
                     caption=caption,
                     progress=progress_for_pyrogram,
-                    progress_args=("Uᴩʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
+                    progress_args=("Uᴘʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
                 )
             elif media_type == "video":
                 await client.send_video(
@@ -227,7 +355,7 @@ async def concurrent_upload(client, message, path, media_type, caption, ph_path,
                     thumb=ph_path,
                     duration=0,
                     progress=progress_for_pyrogram,
-                    progress_args=("Uᴩʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
+                    progress_args=("Uᴘʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
                 )
             elif media_type == "audio":
                 await client.send_audio(
@@ -237,7 +365,7 @@ async def concurrent_upload(client, message, path, media_type, caption, ph_path,
                     thumb=ph_path,
                     duration=0,
                     progress=progress_for_pyrogram,
-                    progress_args=("Uᴩʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
+                    progress_args=("Uᴘʟᴏᴀᴅ sᴛᴀʀᴛᴇᴅ ᴅᴜᴅᴇ...!!", progress_msg, time.time()),
                 )
         except Exception as e:
             raise Exception(f"Upload Error: {e}")
@@ -303,9 +431,11 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                         del renaming_operations[file_id]
                         return
                     template = template.replace(quality_placeholder, "".join(extracted_qualities))
+                  # audio add path 
             audio_type = extract_audio_type(file_name)
             template = template.replace("{audio}", audio_type)
-
+                
+              #continue with renaming
         _, file_extension = os.path.splitext(file_name)
         renamed_file_name = f"{template}{file_extension}"
         renamed_file_path = f"downloads/{renamed_file_name}"
@@ -322,6 +452,7 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
         ph_path = None
 
         try:
+            # Use concurrent download with semaphore
             path = await concurrent_download(client, message, renamed_file_path, download_msg)
         except Exception as e:
             del renaming_operations[file_id]
@@ -362,7 +493,8 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
 
             path = metadata_file_path
             
-            upload_msg = await download_msg.edit("Wᴇᴡ... Iᴀᴍ Uᴩʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
+            
+            upload_msg = await download_msg.edit("Wᴇᴡ... Iᴀᴍ Uᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
 
             c_caption = await codeflixbots.get_caption(message.chat.id)
             c_thumb = await codeflixbots.get_thumbnail(message.chat.id)
@@ -386,6 +518,7 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                 await process_thumb(ph_path)
 
             try:
+                # Use concurrent upload with semaphore
                 await concurrent_upload(client, message, path, media_type, caption, ph_path, upload_msg)
             except Exception as e:
                 if os.path.exists(renamed_file_path):
@@ -395,11 +528,13 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                 del renaming_operations[file_id]
                 return await upload_msg.edit(str(e))
 
+            # Delete the download message only if not in sequence mode
             if not is_sequence:
                 await download_msg.delete()
             else:
                 await download_msg.edit(f"✅ Cᴏᴍᴘʟᴇᴛᴇᴅ: {renamed_file_name}")
 
+            # Clean up files
             if os.path.exists(path):
                 os.remove(path)
             if ph_path and os.path.exists(ph_path):
@@ -419,335 +554,3 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
         if 'file_id' in locals() and file_id in renaming_operations:
             del renaming_operations[file_id]
         raise
-
-@Client.on_message(filters.command("start_sequence") & filters.private)
-@check_ban
-async def start_sequence(client, message: Message):
-    user_id = message.from_user.id
-    if user_id in active_sequences:
-        await message.reply_text(
-            "Hᴇʏ ᴅᴜᴅᴇ...!! A sᴇǫᴜᴇɴᴄᴇ ɪs ᴀʟʀᴇᴀᴅʏ ᴀᴄᴛɪᴠᴇ! Usᴇ /end_sequence ᴛᴏ ᴇɴᴅ ɪᴛ."
-        )
-    else:
-        active_sequences[user_id] = []
-        message_ids[user_id] = []
-        msg = await message.reply_text(
-            "Sᴇǫᴜᴇɴᴄᴇ sᴛᴀʀᴛᴇᴅ! Sᴇɴᴅ ʏᴏᴜʀ ғɪʟᴇs ɴᴏᴡ ʙʀᴏ....Fᴀsᴛ"
-        )
-        message_ids[user_id].append(msg.message_id)
-
-@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
-@check_ban
-async def auto_rename_files(client, message):
-    user_id = message.from_user.id
-    file_id = (
-        message.document.file_id if message.document else
-        message.video.file_id if message.video else
-        message.audio.file_id
-    )
-    file_name = (
-        message.document.file_name if message.document else
-        message.video.file_name if message.video else
-        message.audio.file_name
-    )
-    file_info = {
-        "file_id": file_id,
-        "file_name": file_name if file_name else "Unknown",
-        "message": message,
-        "episode_num": extract_episode_number(file_name if file_name else "Unknown")
-    }
-
-    rename_mode = await codeflixbots.get_rename_mode(user_id)
-    
-    if user_id in active_sequences:
-        active_sequences[user_id].append(file_info)
-        reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
-        message_ids[user_id].append(reply_msg.message_id)
-        return
-
-    if rename_mode == "manual":
-        # Trigger manual rename process
-        await manual_rename(client, message)
-        return
-
-    # Proceed with auto-renaming if manual mode is OFF
-    asyncio.create_task(auto_rename_file(client, message, file_info))
-
-@Client.on_message(filters.command("end_sequence") & filters.private)
-@check_ban
-async def end_sequence(client, message: Message):
-    user_id = message.from_user.id
-    if user_id not in active_sequences:
-        await message.reply_text("Wʜᴀᴛ ᴀʀᴇ ʏᴏᴜ ᴅᴏɪɴɢ ɴᴏ ᴀᴄᴛɪᴠᴇ sᴇǫᴜᴇɴᴄᴇ ғᴏᴜɴᴅ...!!")
-        return
-
-    file_list = active_sequences.pop(user_id, [])
-    delete_messages = message_ids.pop(user_id, [])
-    count = len(file_list)
-
-    if not file_list:
-        await message.reply_text("Nᴏ ғɪʟᴇs ᴡᴇʀᴇ sᴇɴᴛ ɪɴ ᴛʜɪs sᴇǫᴜᴇɴᴄᴇ....ʙʀᴏ...!!")
-    else:
-        file_list.sort(key=lambda x: x["episode_num"])
-        await message.reply_text(f"Sᴇǫᴜᴇɴᴄᴇ ᴇɴᴅᴇᴅ. Nᴏᴡ sᴇɴᴅɪɴɢ ʏᴏᴜʀ {count} ғɪʟᴇ(s) ʙᴀᴄᴋ ɪɴ sᴇǫᴜᴇɴᴄᴇ...!!")
-        
-        rename_mode = await codeflixbots.get_rename_mode(user_id)
-        
-        for index, file_info in enumerate(file_list, 1):
-            try:
-                await asyncio.sleep(0.5)
-                
-                if rename_mode == "manual":
-                    # Delegate to manual rename process
-                    await manual_rename(client, file_info["message"])
-                else:
-                    await client.send_document(
-                        message.chat.id,
-                        file_info["file_id"],
-                        caption=f"{file_info['file_name']}"
-                    )
-                
-            except Exception as e:
-                await message.reply_text(f"Fᴀɪʟᴇᴅ ᴛᴏ sᴇɴᴅ ғɪʟᴇ: {file_info.get('file_name', '')}\n{e}")
-        
-        if rename_mode != "manual":
-            await message.reply_text(f"✅ Aʟʟ {count} ғɪʟᴇs sᴇɴᴛ sᴜᴄᴄᴇssғᴜʟʟʏ ɪɴ sᴇǫᴜᴇɴᴄᴇ!")
-
-    try:
-        await client.delete_messages(chat_id=message.chat.id, message_ids=delete_messages)
-    except Exception as e:
-        print(f"Error deleting messages: {e}")
-
-# Manual rename handlers (merged from filerename.py)
-@Client.on_callback_query(filters.regex('rename'))
-async def manual_rename(client, update):
-    await update.message.delete()
-    await update.message.reply_text("__ᴘʟᴇᴀsᴇ ᴇɴᴛᴇʀ ɴᴇᴡ ғɪʟᴇ ɴᴀᴍᴇ..__",
-                                    reply_to_message_id=update.message.reply_to_message.id,
-                                    reply_markup=ForceReply(True))
-
-@Client.on_message(filters.private & filters.reply)
-async def manual_rename_reply(client, message):
-    reply_message = message.reply_to_message
-    if not isinstance(reply_message.reply_markup, ForceReply):
-        return
-
-    new_name = message.text.strip()
-    if not new_name:
-        await message.reply_text("Please provide a valid file name.")
-        return
-
-    await message.delete()
-    msg = await client.get_messages(message.chat.id, reply_message.reply_to_message.id)
-    file = msg.reply_to_message
-    media = getattr(file, file.media.value)
-
-    if not "." in new_name:
-        if "." in media.file_name:
-            extn = media.file_name.rsplit('.', 1)[-1]
-        else:
-            extn = "mkv"
-        new_name = new_name + "." + extn
-
-    await reply_message.delete()
-
-    # Prepare inline keyboard buttons
-    button = [
-        [InlineKeyboardButton("📁 Dᴏᴄᴜᴍᴇɴᴛ", callback_data="upload_document")]
-    ]
-    if file.media in [MessageMediaType.VIDEO, MessageMediaType.DOCUMENT]:
-        button.append([InlineKeyboardButton("🎥 Vɪᴅᴇᴏ", callback_data="upload_video")])
-    elif file.media == MessageMediaType.AUDIO:
-        button.append([InlineKeyboardButton("🎵 Aᴜᴅɪᴏ", callback_data="upload_audio")])
-
-    await message.reply(
-        text=f"**Sᴇʟᴇᴄᴛ Tʜᴇ Oᴜᴛᴩᴜᴛ Fɪʟᴇ Tyᴩᴇ**\n**• Fɪʟᴇ Nᴀᴍᴇ :-**  `{new_name}`",
-        reply_to_message_id=file.id,
-        reply_markup=InlineKeyboardMarkup(button)
-    )
-
-@Client.on_callback_query(filters.regex("upload"))
-async def manual_upload(client, update):
-    if not os.path.isdir("Metadata"):
-        os.mkdir("Metadata")
-
-    # Extracting necessary information
-    new_name = update.message.text.split(":-")[1].strip()
-    new_filename = new_name
-
-    file_path = f"downloads/{new_filename}"
-    file = update.message.reply_to_message
-
-    ms = await update.message.edit("Tʀyɪɴɢ Tᴏ Dᴏᴡɴʟᴏᴀᴅɪɴɢ")
-    try:
-        path = await client.download_media(message=file, file_name=file_path, progress=progress_for_pyrogram, progress_args=("\n⚠️ __**Please wait...**__\n\n❄️ **Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....**", ms, time.time()))
-    except Exception as e:
-        return await ms.edit(str(e))
-
-    _bool_metadata = await codeflixbots.get_metadata(update.message.chat.id)
-
-    if _bool_metadata:
-        metadata_path = f"Metadata/{new_filename}"
-        metadata = await codeflixbots.get_metadata_code(update.message.chat.id)
-        if metadata:
-            await ms.edit("I Fᴏᴜɴᴅ Yᴏᴜʀ Mᴇᴛᴀᴅᴀᴛᴀ\n\n__**Aᴅᴅɪɴɢ Mᴇᴛᴀᴅᴀᴛᴀ Tᴏ Fɪʟᴇ....**")
-            cmd = f"""ffmpeg -i "{path}" {metadata} "{metadata_path}" """
-            process = await asyncio.create_subprocess_shell(
-                cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-            )
-            stdout, stderr = await process.communicate()
-            er = stderr.decode()
-            if er:
-                return await ms.edit(str(er) + "\n\n**Error**")
-        await ms.edit("**Metadata added to the file successfully ✅**\n\n⚠️ __**Tʀyɪɴɢ Tᴏ Uᴩʟᴏᴀᴅɪɴɢ....**")
-    else:
-        await ms.edit("⚠️  __**Please wait...**__\n\n\n**Tʀyɪɴɢ Tᴏ Uᴩʟᴏᴀᴅɪɴɢ....**")
-
-    duration = 0
-    try:
-        parser = createParser(file_path)
-        metadata = extractMetadata(parser)
-        if metadata.has("duration"):
-            duration = metadata.get('duration').seconds
-        parser.close()
-    except:
-        pass
-
-    ph_path = None
-    media = getattr(file, file.media.value)
-    c_caption = await codeflixbots.get_caption(update.message.chat.id)
-    c_thumb = await codeflixbots.get_thumbnail(update.message.chat.id)
-
-    if c_caption:
-        try:
-            caption = c_caption.format(filename=new_filename, filesize=humanbytes(media.file_size), duration=convert(duration))
-        except Exception as e:
-            return await ms.edit(text=f"Yᴏᴜʀ Cᴀᴩᴛɪᴏɴ Eʀʀᴏʀ Exᴄᴇᴩᴛ Kᴇyᴡᴏʀᴅ Aʀɡᴜᴍᴇɴᴛ ●> ({e})")
-    else:
-        caption = f"**{new_filename}**"
-
-    if media.thumbs or c_thumb:
-        if c_thumb:
-            ph_path = await client.download_media(c_thumb)
-            width, height, ph_path = await fix_thumb(ph_path)
-        else:
-            try:
-                ph_path_ = await take_screen_shot(file_path, os.path.dirname(os.path.abspath(file_path)), random.randint(0, duration - 1))
-                width, height, ph_path = await fix_thumb(ph_path_)
-            except Exception as e:
-                ph_path = None
-                print(e)
-
-    type = update.data.split("_")[1]
-
-    if media.file_size > 2000 * 1024 * 1024:
-        try:
-            if type == "document":
-                filw = await client.send_document(
-                    Config.LOG_CHANNEL,
-                    document=metadata_path if _bool_metadata else file_path,
-                    thumb=ph_path,
-                    caption=caption,
-                    progress=progress_for_pyrogram,
-                    progress_args=("⚠️ __**Please wait...**__\n\n🌨️ **Uᴩʟᴏᴅ Sᴛᴀʀᴛᴇᴅ....**", ms, time.time())
-                )
-                from_chat = filw.chat.id
-                mg_id = filw.id
-                time.sleep(2)
-                await client.copy_message(update.from_user.id, from_chat, mg_id)
-                await ms.delete()
-                await client.delete_messages(from_chat, mg_id)
-            elif type == "video":
-                filw = await client.send_video(
-                    update.message.chat.id,
-                    video=metadata_path if _bool_metadata else file_path,
-                    caption=caption,
-                    thumb=ph_path,
-                    width=width,
-                    height=height,
-                    duration=duration,
-                    progress=progress_for_pyrogram,
-                    progress_args=("⚠️ __**Uᴩʟᴏᴅ Sᴛᴀʀᴛᴇᴅ....**", ms, time.time())
-                )
-                from_chat = filw.chat.id
-                mg_id = filw.id
-                time.sleep(2)
-                await client.copy_message(update.from_user.id, from_chat, mg_id)
-                await ms.delete()
-                await client.delete_messages(from_chat, mg_id)
-            elif type == "audio":
-                filw = await client.send_audio(
-                    update.message.chat.id,
-                    audio=metadata_path if _bool_metadata else file_path,
-                    caption=caption,
-                    thumb=ph_path,
-                    duration=duration,
-                    progress=progress_for_pyrogram,
-                    progress_args=("⚠️ __**Please wait...**__\n\n🌨️ **Uᴩʟᴏᴅ Sᴛᴀʀᴛᴇᴅ....**", ms, time.time())
-                )
-                from_chat = filw.chat.id
-                mg_id = filw.id
-                time.sleep(2)
-                await client.copy_message(update.from_user.id, from_chat, mg_id)
-                await ms.delete()
-                await client.delete_messages(from_chat, mg_id)
-        except Exception as e:
-            os.remove(file_path)
-            if ph_path:
-                os.remove(ph_path)
-            if metadata_path:
-                os.remove(metadata_path)
-            if path:
-                os.remove(path)
-            return await ms.edit(f" Eʀʀᴏʀ {e}")
-    else:
-        try:
-            if type == "document":
-                await client.send_document(
-                    update.message.chat.id,
-                    document=metadata_path if _bool_metadata else file_path,
-                    thumb=ph_path,
-                    caption=caption,
-                    progress=progress_for_pyrogram,
-                    progress_args=("⚠️ __**Please wait...**__\n\n🌨️ **Uᴩʟᴏᴅ Sᴛᴀʀᴛᴇᴅ....**", ms, time.time())
-                )
-            elif type == "video":
-                await client.send_video(
-                    update.message.chat.id,
-                    video=metadata_path if _bool_metadata else file_path,
-                    caption=caption,
-                    thumb=ph_path,
-                    width=width,
-                    height=height,
-                    duration=duration,
-                    progress=progress_for_pyrogram,
-                    progress_args=("⚠️ __**Please wait...**__\n\n🌨️ **Uᴩʟᴏᴅ Sᴛᴀʀᴛᴇᴅ....**", ms, time.time())
-                )
-            elif type == "audio":
-                await client.send_audio(
-                    update.message.chat.id,
-                    audio=metadata_path if _bool_metadata else file_path,
-                    caption=caption,
-                    thumb=ph_path,
-                    duration=duration,
-                    progress=progress_for_pyrogram,
-                    progress_args=("⚠️ __**Please wait...**__\n\n🌨️ **Uᴩʟᴏᴅ Sᴛᴀʀᴛᴇᴅ....**", ms, time.time())
-                )
-        except Exception as e:
-            os.remove(file_path)
-            if ph_path:
-                os.remove(ph_path)
-            if metadata_path:
-                os.remove(metadata_path)
-            if path:
-                os.remove(path)
-            return await ms.edit(f" Eʀʀᴏʀ {e}")
-
-    await ms.delete()
-
-    if ph_path:
-        os.remove(ph_path)
-    if file_path:
-        os.remove(file_path)
-    if metadata_path:
-        os.remove(metadata_path)
