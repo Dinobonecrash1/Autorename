@@ -197,21 +197,9 @@ async def handle_file(client, message):
     # else: (keep your old auto rename logic)
 
            
-async def auto_rename_file(client, message, file_info, is_sequence=False, status_msg=None, manual_rename=False):
-    try:
+async def auto_rename_file(client, message):
         user_id = message.from_user.id
-        file_id = file_info["file_id"]
-        file_name = file_info["file_name"]
-
-        # Manual rename support
-        if manual_rename and "manual_new_name" in file_info:
-            new_file_name = file_info["manual_new_name"]
-            root, ext = os.path.splitext(file_name)
-            if not os.path.splitext(new_file_name)[1]:
-                new_file_name += ext
-            renamed_file_name = new_file_name
-        else:
-            # ...your existing auto-rename template logic here..
+     
     file_id = (
         message.document.file_id if message.document else
         message.video.file_id if message.video else
