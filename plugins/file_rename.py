@@ -16,10 +16,6 @@ from pyrogram.enums import MessageMediaType
 
 ADMIN_URL = Config.ADMIN_URL
 
-# Add this at the top of your file for manual mode state:
-pending_renames = {}  # user_id: { 'file_msg_id': int, 'file_msg': ... }
-
-
 active_sequences = {}
 message_ids = {}
 renaming_operations = {}
@@ -64,7 +60,9 @@ def extract_season_number(filename):
             return int(match.group(1))
     return 1  # Default to season 1 if not found
     
+import re
 
+import re
 
 def extract_audio_type(filename: str) -> str:
     if not filename or not isinstance(filename, str):
@@ -160,10 +158,8 @@ async def start_sequence(client, message: Message):
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
-async def handle_incoming_file(client, message):
+async def auto_rename_files(client, message):
     user_id = message.from_user.id
-    rename_mode = await codeflixbots.get_rename_mode(user_id)
-
     file_id = (
         message.document.file_id if message.document else
         message.video.file_id if message.video else
@@ -175,177 +171,21 @@ async def handle_incoming_file(client, message):
         message.audio.file_name
     )
     file_info = {
-        "file_id": file_id,
+        "file_id": file_id, 
         "file_name": file_name if file_name else "Unknown",
-        "message": message,
+        "message": message,  # Store the entire message for later processing
         "episode_num": extract_episode_number(file_name if file_name else "Unknown")
     }
 
-    # === MANUAL MODE FLOW ===
-    if rename_mode == "manual":
-        file_size = (
-            message.document.file_size if message.document else
-            message.video.file_size if message.video else
-            message.audio.file_size
-        )
-        kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("📝 START RENAME 📝", callback_data=f"start_rename|{message.id}")],
-            [InlineKeyboardButton("❌ CANCEL ❌", callback_data=f"cancel_rename|{message.id}")]
-        ])
-        text = (
-            "<b>WHAT DO YOU WANT ME TO DO WITH THIS FILE.?</b>\n\n"
-            f"<b>FILE NAME :-</b> {file_name}\n"
-            f"<b>FILE SIZE :-</b> {humanbytes(file_size)}"
-        )
-        await message.reply_text(
-            text,
-            reply_markup=kb
-        )
-        # Store pending state for this user (for the reply flow)
-        pending_renames[user_id] = {
-            "file_msg_id": message.id,
-            "file_msg": message
-        }
-        return
-
-    # === SEQUENCE MODE (unchanged) ===
     if user_id in active_sequences:
         active_sequences[user_id].append(file_info)
-        reply_msg = await message.reply_text(
-            "Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!"
-        )
+        reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
         message_ids[user_id].append(reply_msg.message_id)
         return
 
-    # === AUTO RENAME (default) ===
+    # Not in sequence: Create concurrent task for auto renaming
     asyncio.create_task(auto_rename_file(client, message, file_info))
- 
-async def auto_rename_file(client, message, file_info, is_sequence=False, status_msg=None, manual_rename=False):
-    print("auto_rename_file loaded with manual_rename param")
-    try:
-        user_id = message.from_user.id
-        file_id = file_info["file_id"]
-        file_name = file_info["file_name"]
 
-        # --- MANUAL RENAME LOGIC ---
-        if manual_rename and "manual_new_name" in file_info:
-            new_file_name = file_info["manual_new_name"]
-            root, ext = os.path.splitext(file_name)
-            if not os.path.splitext(new_file_name)[1]:
-                new_file_name += ext
-            renamed_file_name = new_file_name
-        else:
-            # --- AUTO RENAME LOGIC (your full template logic here) ---
-            format_template = await codeflixbots.get_format_template(user_id)
-            media_preference = await codeflixbots.get_media_preference(user_id) 
-
-            if not format_template:
-                error_msg = "Please Set An Auto Rename Format First Using /autorename"
-                if status_msg:
-                    return await status_msg.edit(error_msg)
-                else:
-                    return await message.reply_text(error_msg)
-
-            media_type = media_preference or "document"
-            if file_name.endswith(".mp4"):
-                media_type = "video"
-            elif file_name.endswith(".mp3"):
-                media_type = "audio"
-
-            if await check_anti_nsfw(file_name, message):
-                error_msg = "NSFW content detected. File upload rejected."
-                if status_msg:
-                    return await status_msg.edit(error_msg)
-                else:
-                    return await message.reply_text(error_msg)
-
-            if file_id in renaming_operations:
-                elapsed_time = (datetime.now() - renaming_operations[file_id]).seconds
-                if elapsed_time < 10:
-                    return
-
-            renaming_operations[file_id] = datetime.now()
-
-            episode_number = extract_episode_number(file_name)
-            season_number = extract_season_number(file_name)
-            template = format_template
-            if episode_number:
-                placeholders = ["episode", "Episode", "EPISODE", "{episode}"]
-                for placeholder in placeholders:
-                    template = template.replace(placeholder, str(episode_number), 1)
-                season_placeholders = ["season", "Season", "SEASON", "{season}"]
-                for season_placeholder in season_placeholders:
-                    template = template.replace(season_placeholder, f"{season_number:02d}", 1)
-                quality_placeholders = ["quality", "Quality", "QUALITY", "{quality}"]
-                for quality_placeholder in quality_placeholders:
-                    if quality_placeholder in template:
-                        extracted_qualities = extract_quality(file_name)
-                        if extracted_qualities == "Unknown":
-                            error_msg = "I Was Not Able To Extract The Quality Properly. Renaming As 'Unknown'..."
-                            if status_msg:
-                                await status_msg.edit(error_msg)
-                            else:
-                                await message.reply_text(error_msg)
-                            del renaming_operations[file_id]
-                            return
-                        template = template.replace(quality_placeholder, "".join(extracted_qualities))
-                audio_type = extract_audio_type(file_name)
-                template = template.replace("{audio}", audio_type)
-            _, file_extension = os.path.splitext(file_name)
-            renamed_file_name = f"{template}{file_extension}"
-            renamed_file_name = file_name 
-
-              # --- Continue with download and upload logic ---
-        renamed_file_path = f"downloads/{renamed_file_name}"
-        os.makedirs(os.path.dirname(renamed_file_path), exist_ok=True)
-
-        # Download the file
-        if status_msg:
-            download_msg = status_msg
-            await download_msg.edit("Downloading file...")
-        else:
-            download_msg = await message.reply_text("Downloading file...")
-
-        path = await client.download_media(
-            file_info["message"],
-            file_name=renamed_file_path
-        )
-
-        # Upload the file (simplified)
-        await download_msg.edit("Uploading file...")
-        if renamed_file_name.endswith(".mp4"):
-            await client.send_video(
-                message.chat.id,
-                video=path,
-                caption=renamed_file_name
-            )
-        elif renamed_file_name.endswith(".mp3"):
-            await client.send_audio(
-                message.chat.id,
-                audio=path,
-                caption=renamed_file_name
-            )
-        else:
-            await client.send_document(
-                message.chat.id,
-                document=path,
-                caption=renamed_file_name
-            )
-
-        # Clean up
-        if os.path.exists(path):
-            os.remove(path)
-        if status_msg:
-            await status_msg.delete()
-        else:
-            await download_msg.delete()
-
-    except Exception as e:
-        # error handling as before
-        if status_msg:
-            await status_msg.edit(f"Error: {e}")
-        else:
-            await message.reply_text(f"Error: {e}")
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
 async def end_sequence(client, message: Message):
