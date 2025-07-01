@@ -221,6 +221,7 @@ async def handle_incoming_file(client, message):
     asyncio.create_task(auto_rename_file(client, message, file_info))
  
 async def auto_rename_file(client, message, file_info, is_sequence=False, status_msg=None, manual_rename=False):
+    print("auto_rename_file loaded with manual_rename param")
     try:
         user_id = message.from_user.id
         file_id = file_info["file_id"]
