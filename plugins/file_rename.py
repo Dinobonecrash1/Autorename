@@ -36,9 +36,6 @@ def extract_season_number(filename):
             return int(match.group(1))
     return 1  # Default to season 1 if not found
     
-import re
-
-import re
 
 def extract_audio_type(filename: str) -> str:
     if not filename or not isinstance(filename, str):
