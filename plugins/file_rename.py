@@ -197,9 +197,8 @@ async def handle_file(client, message):
     # else: (keep your old auto rename logic)
 
            
-async def auto_rename_file(client, message):
-        user_id = message.from_user.id
-     
+async def auto_rename_files(client, message):
+    user_id = message.from_user.id
     file_id = (
         message.document.file_id if message.document else
         message.video.file_id if message.video else
@@ -225,6 +224,7 @@ async def auto_rename_file(client, message):
 
     # Not in sequence: Create concurrent task for auto renaming
     asyncio.create_task(auto_rename_file(client, message, file_info))
+
 
 @Client.on_callback_query(filters.regex(r"^start_rename\|(\d+)$"))
 async def start_rename_cb(client, cb):
