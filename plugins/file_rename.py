@@ -160,7 +160,7 @@ async def start_sequence(client, message: Message):
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
-async def auto_rename_file(client, message, file_info, is_sequence=False, status_msg=None, manual_rename=False):
+async def handle_incoming_file(client, message):
     user_id = message.from_user.id
     rename_mode = await codeflixbots.get_rename_mode(user_id)
 
@@ -219,6 +219,90 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
 
     # === AUTO RENAME (default) ===
     asyncio.create_task(auto_rename_file(client, message, file_info))
+ 
+async def auto_rename_file(client, message, file_info, is_sequence=False, status_msg=None, manual_rename=False):
+    try:
+        user_id = message.from_user.id
+        file_id = file_info["file_id"]
+        file_name = file_info["file_name"]
+
+        # --- MANUAL RENAME LOGIC ---
+        if manual_rename and "manual_new_name" in file_info:
+            new_file_name = file_info["manual_new_name"]
+            root, ext = os.path.splitext(file_name)
+            if not os.path.splitext(new_file_name)[1]:
+                new_file_name += ext
+            renamed_file_name = new_file_name
+        else:
+            # --- AUTO RENAME LOGIC (use your old template code here) ---
+            format_template = await codeflixbots.get_format_template(user_id)
+            media_preference = await codeflixbots.get_media_preference(user_id)
+
+            if not format_template:
+                error_msg = "Please Set An Auto Rename Format First Using /autorename"
+                if status_msg:
+                    return await status_msg.edit(error_msg)
+                else:
+                    return await message.reply_text(error_msg)
+
+            # Use your extraction logic for episode/season/quality etc.
+            episode_number = file_info.get("episode_num", 1)
+            season_number = file_info.get("season_num", 1)
+            quality = file_info.get("quality", "Unknown")
+            template = format_template.replace("{episode}", str(episode_number)).replace("{season}", str(season_number)).replace("{quality}", quality)
+            _, ext = os.path.splitext(file_name)
+            renamed_file_name = f"{template}{ext}"
+
+        # --- Continue with download and upload logic ---
+        renamed_file_path = f"downloads/{renamed_file_name}"
+        os.makedirs(os.path.dirname(renamed_file_path), exist_ok=True)
+
+        # Download the file
+        if status_msg:
+            download_msg = status_msg
+            await download_msg.edit("Downloading file...")
+        else:
+            download_msg = await message.reply_text("Downloading file...")
+
+        path = await client.download_media(
+            file_info["message"],
+            file_name=renamed_file_path
+        )
+
+        # Upload the file (simplified)
+        await download_msg.edit("Uploading file...")
+        if renamed_file_name.endswith(".mp4"):
+            await client.send_video(
+                message.chat.id,
+                video=path,
+                caption=renamed_file_name
+            )
+        elif renamed_file_name.endswith(".mp3"):
+            await client.send_audio(
+                message.chat.id,
+                audio=path,
+                caption=renamed_file_name
+            )
+        else:
+            await client.send_document(
+                message.chat.id,
+                document=path,
+                caption=renamed_file_name
+            )
+
+        # Clean up
+        if os.path.exists(path):
+            os.remove(path)
+        if status_msg:
+            await status_msg.delete()
+        else:
+            await download_msg.delete()
+
+    except Exception as e:
+        if status_msg:
+            await status_msg.edit(f"Error: {e}")
+        else:
+            await message.reply_text(f"Error: {e}")
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
