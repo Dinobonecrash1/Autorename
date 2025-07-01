@@ -303,6 +303,8 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
             await status_msg.edit(f"Error: {e}")
         else:
             await message.reply_text(f"Error: {e}")
+         
+         print("auto_rename_file loaded with manual_rename param")
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
