@@ -13,9 +13,11 @@ from helper.database import codeflixbots
 from config import Config
 from functools import wraps
 from pyrogram.enums import MessageMediaType
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 ADMIN_URL = Config.ADMIN_URL
 
+pending_renames = {}  # Add this at the top of the file
 active_sequences = {}
 message_ids = {}
 renaming_operations = {}
@@ -155,9 +157,59 @@ async def start_sequence(client, message: Message):
         )
         message_ids[user_id].append(msg.message_id)
 
-
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
+async def handle_file(client, message):
+    user_id = message.from_user.id
+    rename_mode = await codeflixbots.get_rename_mode(user_id)
+    
+    if rename_mode == "manual":
+        file_name = (
+            message.document.file_name if message.document else
+            message.video.file_name if message.video else
+            message.audio.file_name
+        )
+        file_size = (
+            message.document.file_size if message.document else
+            message.video.file_size if message.video else
+            message.audio.file_size
+        )
+        kb = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("📝 START RENAME 📝", callback_data=f"start_rename|{message.id}"),
+            ],
+            [
+                InlineKeyboardButton("❌ CANCEL ❌", callback_data=f"cancel_rename|{message.id}"),
+            ]
+        ])
+        text = (
+            "<b>WHAT DO YOU WANT ME TO DO WITH THIS FILE.?</b>\n\n"
+            f"<b>FILE NAME :-</b> {file_name}\n"
+            f"<b>FILE SIZE :-</b> {humanbytes(file_size)}"
+        )
+        await message.reply_text(
+            text,
+            reply_markup=kb
+        )
+        # Store state for this user+file, e.g. in a dict or DB if you want (optional)
+        return
+
+    # else: (keep your old auto rename logic)
+async def auto_rename_file(client, message, file_info, is_sequence=False, status_msg=None, manual_rename=False):
+    try:
+        user_id = message.from_user.id
+        file_id = file_info["file_id"]
+        file_name = file_info["file_name"]
+
+        # Manual rename support
+        if manual_rename and "manual_new_name" in file_info:
+            new_file_name = file_info["manual_new_name"]
+            root, ext = os.path.splitext(file_name)
+            if not os.path.splitext(new_file_name)[1]:
+                new_file_name += ext
+            renamed_file_name = new_file_name
+        else:
+            # ...your existing auto-rename template logic here...
 async def auto_rename_files(client, message):
     user_id = message.from_user.id
     file_id = (
@@ -185,6 +237,65 @@ async def auto_rename_files(client, message):
 
     # Not in sequence: Create concurrent task for auto renaming
     asyncio.create_task(auto_rename_file(client, message, file_info))
+
+@Client.on_callback_query(filters.regex(r"^start_rename\|(\d+)$"))
+async def start_rename_cb(client, cb):
+    user_id = cb.from_user.id
+    file_msg_id = int(cb.data.split("|")[1])
+    # Get the original file message
+    file_msg = await cb.message.chat.get_message(file_msg_id)
+    # Save state
+    pending_renames[user_id] = {
+        "file_msg_id": file_msg_id,
+        "file_msg": file_msg
+    }
+    await cb.message.edit_text(
+        "<b>PLEASE ENTER NEW FILE NAME..</b>\n\n"
+        "<i>Reply to this message with the new file name (with extension)!</i>"
+    )
+
+@Client.on_callback_query(filters.regex(r"^cancel_rename\|(\d+)$"))
+async def cancel_rename_cb(client, cb):
+    user_id = cb.from_user.id
+    if user_id in pending_renames:
+        del pending_renames[user_id]
+    await cb.message.edit_text("❌ Rename cancelled.")
+ @Client.on_message(filters.private & filters.reply)
+async def catch_manual_rename_filename(client, message):
+    user_id = message.from_user.id
+    if user_id not in pending_renames:
+        return  # Not in manual rename flow
+
+    pending = pending_renames[user_id]
+    # Ensure reply is to the bot's "PLEASE ENTER NEW FILE NAME.." message
+    if message.reply_to_message and message.reply_to_message.message_id == pending['file_msg_id'] + 1:
+        new_file_name = message.text.strip()
+        if not new_file_name or "." not in new_file_name:
+            await message.reply_text("Please enter a valid file name (with extension).")
+            return
+
+        file_msg = pending["file_msg"]
+        # Compose file_info like your auto_rename_file expects
+        file_id = (
+            file_msg.document.file_id if file_msg.document else
+            file_msg.video.file_id if file_msg.video else
+            file_msg.audio.file_id
+        )
+        orig_file_name = (
+            file_msg.document.file_name if file_msg.document else
+            file_msg.video.file_name if file_msg.video else
+            file_msg.audio.file_name
+        )
+
+        file_info = {
+            "file_id": file_id,
+            "file_name": orig_file_name,
+            "message": file_msg,
+            "manual_new_name": new_file_name
+        }
+        # Call your auto_rename_file with manual_rename=True
+        await auto_rename_file(client, message, file_info, is_sequence=False, status_msg=None, manual_rename=True)
+        del pending_renames[user_id]
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
