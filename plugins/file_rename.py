@@ -195,6 +195,8 @@ async def handle_file(client, message):
         return
 
     # else: (keep your old auto rename logic)
+
+           
 async def auto_rename_file(client, message, file_info, is_sequence=False, status_msg=None, manual_rename=False):
     try:
         user_id = message.from_user.id
@@ -209,9 +211,7 @@ async def auto_rename_file(client, message, file_info, is_sequence=False, status
                 new_file_name += ext
             renamed_file_name = new_file_name
         else:
-            # ...your existing auto-rename template logic here...
-async def auto_rename_files(client, message):
-    user_id = message.from_user.id
+            # ...your existing auto-rename template logic here..
     file_id = (
         message.document.file_id if message.document else
         message.video.file_id if message.video else
