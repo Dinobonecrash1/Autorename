@@ -1,18 +1,13 @@
-
 import random
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 from helper.database import codeflixbots
-from config import *
 from config import Config
 from functools import wraps
 
-
 ADMIN_URL = Config.ADMIN_URL
-
-
 
 def check_ban(func):
     @wraps(func)
@@ -30,8 +25,6 @@ def check_ban(func):
         return await func(client, message, *args, **kwargs)
     return wrapper
 
-
-    
 # Start Command Handler
 @Client.on_message(filters.private & filters.command("start"))
 @check_ban
@@ -61,7 +54,6 @@ async def start(client, message: Message):
         [
             InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')
         ],
-
         [
             InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'),
             InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ•', url='https://t.me/Animeworld_zone')
@@ -82,8 +74,7 @@ async def start(client, message: Message):
             disable_web_page_preview=True
         )
 
-
-#Updated Callback Query Handler
+# Updated Callback Query Handler
 @Client.on_callback_query()
 async def cb_handler(client, query: CallbackQuery):
     data = query.data
@@ -99,17 +90,17 @@ async def cb_handler(client, query: CallbackQuery):
         )
         return
 
-    
-    print(f"Callback data received: {data}")  # Debugging lin
+    # print(f"Callback data received: {data}")  # Debugging line
 
     if data == "home":
         await query.message.edit_text(
             text=Txt.START_TXT.format(query.from_user.mention),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')], [InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')],
-
-                [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
+                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
+                [InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')],
+                [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'),
+                 InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
             ])
         )
 
@@ -148,10 +139,6 @@ async def cb_handler(client, query: CallbackQuery):
             ]) 
            )
 
-
-
-
-    
     elif data == "caption":
         await query.message.edit_text(
             text=Txt.CAPTION_TXT,
@@ -214,9 +201,10 @@ async def cb_handler(client, query: CallbackQuery):
         await query.message.edit_text(
             text=Txt.START_TXT.format(query.from_user.mention),
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')], [InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')
-            ],
-                [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'), InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
+                [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs •", callback_data='help')],
+                [InlineKeyboardButton("Rename Mode ⚙️", callback_data='mode')],
+                [InlineKeyboardButton('• ᴀʙᴏᴜᴛ', callback_data='about'),
+                 InlineKeyboardButton('Dᴇᴠᴇʟᴏᴘᴇʀ •', url='https://t.me/Animeworld_zone')]
             ]),
             disable_web_page_preview=True
         )
@@ -253,12 +241,21 @@ async def cb_handler(client, query: CallbackQuery):
             ])
         )
     elif data == "thumbnail":
-        await query.message.edit_caption(
-            caption=Txt.THUMBNAIL_TXT,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
-            ])
-       )
+        try:
+            await query.message.edit_caption(
+                caption=Txt.THUMBNAIL_TXT,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
+                ])
+            )
+        except Exception:
+            await query.message.edit_text(
+                text=Txt.THUMBNAIL_TXT,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
+                ])
+            )
+        return
     
     elif data == "about":
         await query.message.edit_text(
@@ -270,14 +267,11 @@ async def cb_handler(client, query: CallbackQuery):
             ]])          
         )
     
-    
     elif data == "close":
         try:
-           await query.message.delete()
-           if query.message.reply_to_message:
-               await query.message.reply_to_message.delete()
+            await query.message.delete()
+            if query.message.reply_to_message:
+                await query.message.reply_to_message.delete()
         except Exception as e:
             pass  # Optionally log e
         return
-
-   
