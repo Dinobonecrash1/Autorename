@@ -11,10 +11,7 @@ from plugins.antinsfw import check_anti_nsfw
 from helper.utils import progress_for_pyrogram, humanbytes, convert
 from helper.database import codeflixbots
 from config import Config
-from functools import wraps
-from pyrogram.enums import MessageMediaType
 
-ADMIN_URL = Config.ADMIN_URL
 
 active_sequences = {}
 message_ids = {}
@@ -24,26 +21,9 @@ renaming_operations = {}
 download_semaphore = asyncio.Semaphore(5)  # Allow 5 concurrent downloads
 upload_semaphore = asyncio.Semaphore(3)    # Allow 3 concurrent uploads
 
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
- # Ensure you import the variable from your config
 
-def check_ban(func):
-    @wraps(func)
-    async def wrapper(client, message, *args, **kwargs):
-        user_id = message.from_user.id
-        user = await codeflixbots.col.find_one({"_id": user_id})
-        if user and user.get("ban_status", {}).get("is_banned", False):
-            keyboard = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("📩 Contact Admin", url=ADMIN_URL)]]
-            )
-            return await message.reply_text(
-                "🚫 You are banned from using this bot.\n\nIf you think this is a mistake, contact the admin.",
-                reply_markup=keyboard
-            )
-        return await func(client, message, *args, **kwargs)
-    return wrapper
 
-    
+
 def detect_quality(file_name):
     quality_order = {"480p": 1, "720p": 2, "1080p": 3}
     match = re.search(r"(480p|720p|1080p)", file_name)
@@ -60,9 +40,7 @@ def extract_season_number(filename):
             return int(match.group(1))
     return 1  # Default to season 1 if not found
     
-import re
 
-import re
 
 def extract_audio_type(filename: str) -> str:
     if not filename or not isinstance(filename, str):
@@ -137,7 +115,6 @@ def extract_episode_number(filename):
     return 999  # Default high number for files without episode numbers
 
 @Client.on_message(filters.command("start_sequence") & filters.private)
-@check_ban
 async def start_sequence(client, message: Message):
     user_id = message.from_user.id
 
@@ -157,7 +134,6 @@ async def start_sequence(client, message: Message):
 
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
-@check_ban
 async def auto_rename_files(client, message):
     user_id = message.from_user.id
     file_id = (
@@ -187,7 +163,6 @@ async def auto_rename_files(client, message):
     asyncio.create_task(auto_rename_file(client, message, file_info))
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
-@check_ban
 async def end_sequence(client, message: Message):
     user_id = message.from_user.id
     if user_id not in active_sequences:
