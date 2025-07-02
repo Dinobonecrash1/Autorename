@@ -7,6 +7,8 @@ from helper.database import codeflixbots
 from config import *
 from config import Config
 from functools import wraps
+import humanize
+from time import sleep
 
 ADMIN_URL = Config.ADMIN_URL
 
@@ -74,6 +76,31 @@ async def start(client, message: Message):
             reply_markup=buttons,
             disable_web_page_preview=True
         )
+
+@Client.on_message(filters.private & (filters.document | filters.audio | filters.video))
+async def rename_start(client, message):
+    file = getattr(message, message.media.value)
+    filename = file.file_name
+    filesize = humanize.naturalsize(file.file_size)
+
+    if not Config.STRING_SESSION:
+        if file.file_size > 2000 * 1024 * 1024:
+            return await message.reply_text("Sᴏʀʀy Bʀᴏ Tʜɪꜱ Bᴏᴛ Iꜱ Dᴏᴇꜱɴ'ᴛ Sᴜᴩᴩᴏʀᴛ Uᴩʟᴏᴀᴅɪɴɢ Fɪʟᴇꜱ Bɪɢɢᴇʀ Tʜᴀɴ 2Gʙ")
+
+    try:
+        text = f"""**__ᴡʜᴀᴛ ᴅᴏ ʏᴏᴜ ᴡᴀɴᴛ ᴍᴇ ᴛᴏ ᴅᴏ ᴡɪᴛʜ ᴛʜɪs ғɪʟᴇ.?__**\n\n**ғɪʟᴇ ɴᴀᴍᴇ** :- `{filename}`\n\n**ғɪʟᴇ sɪᴢᴇ** :- `{filesize}`"""
+        buttons = [[InlineKeyboardButton("📝 sᴛᴀʀᴛ ʀᴇɴᴀᴍᴇ 📝", callback_data="rename")],
+                   [InlineKeyboardButton("✖️ ᴄᴀɴᴄᴇʟ ✖️", callback_data="close")]]
+        await message.reply_text(text=text, reply_to_message_id=message.id, reply_markup=InlineKeyboardMarkup(buttons))
+    except FloodWait as e:
+        await sleep(e.value)
+        text = f"""**__What do you want me to do with this file.?__**\n\n**File Name** :- `{filename}`\n\n**File Size** :- `{filesize}`"""
+        buttons = [[InlineKeyboardButton("📝 sᴛᴀʀᴛ ʀᴇɴᴀᴍᴇ 📝", callback_data="rename")],
+                   [InlineKeyboardButton("✖️ ᴄᴀɴᴄᴇʟ ✖️", callback_data="close")]]
+        await message.reply_text(text=text, reply_to_message_id=message.id, reply_markup=InlineKeyboardMarkup(buttons))
+    except:
+        pass
+
 
 # Updated Callback Query Handler
 @Client.on_callback_query()
