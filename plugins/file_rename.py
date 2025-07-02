@@ -266,6 +266,160 @@ async def manual_rename_file(client, message, file_info, new_name):
             if elapsed_time < 10:
                 return
 
+        renaming_operations[file_id] = datetime.now()
+
+        media_type = media_preference or "document"
+        if file_name.endswith(".mp4"):
+            media_type = "video"
+        elif file_name.endswith(".mp3"):
+            media_type = "audio"
+
+        _, file_extension = os.path.splitext(file_name)
+        renamed_file_name = f"{new_name}{file_extension}"
+        renamed_file_path = f"downloads/{renamed_file_name}"
+        metadata_file_path = f"Metadata/{renamed_file_name}"
+        os.makedirs(os.path.dirname(renamed_file_path), exist_ok=True)
+        os.makedirs(os.path.dirname(metadata_file_path), exist_ok=True)
+
+        download_msg = await message.reply_text("Downloading your file...!!")
+
+        ph_path = None
+
+        async with download_semaphore:
+            try:
+                path = await client.download_media(
+                    message,
+                    file_name=renamed_file_path,
+                    progress=progress_for_pyrogram,
+                    progress_args=("Download started dude....!!", download_msg, time.time()),
+                )
+            except Exception as e:
+                del renaming_operations[file_id]
+                return await download_msg.edit(str(e))
+
+        await download_msg.edit("Adding metadata dude...!!")
+
+        ffmpeg_cmd = shutil.which('ffmpeg')
+        metadata_command = [
+            ffmpeg_cmd,
+            '-i', path,
+            '-metadata', f'title={await codeflixbots.get_title(user_id)}',
+            '-metadata', f'artist={await codeflixbots.get_artist(user_id)}',
+            '-metadata', f'author={await codeflixbots.get_author(user_id)}',
+            '-metadata:s:v', f'title={await codeflixbots.get_video(user_id)}',
+            '-metadata:s:a', f'title={await codeflixbots.get_audio(user_id)}',
+            '-metadata:s:s', f'title={await codeflixbots.get_subtitle(user_id)}',
+            '-metadata', f'encoded_by={await codeflixbots.get_encoded_by(user_id)}',
+            '-metadata', f'custom_tag={await codeflixbots.get_custom_tag(user_id)}',
+            '-map', '0',
+            '-c', 'copy',
+            '-loglevel', 'error',
+            metadata_file_path
+        ]
+
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *metadata_command,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await process.communicate()
+            if process.returncode != 0:
+                error_message = stderr.decode()
+                await download_msg.edit(f"Metadata Error:\n{error_message}")
+                del renaming_operations[file_id]
+                return
+
+            path = metadata_file_path
+            
+            upload_msg = await download_msg.edit("Uploading your file...!!")
+
+            c_caption = await codeflixbots.get_caption(message.chat.id)
+            c_thumb = await codeflixbots.get_thumbnail(message.chat.id)
+
+            caption = (
+                c_caption.format(
+                    filename=renamed_file_name,
+                    filesize=humanbytes(message.document.file_size) if message.document else "Unknown",
+                    duration=convert(0),
+                )
+                if c_caption
+                else f"{renamed_file_name}"
+            )
+
+            if c_thumb:
+                ph_path = await client.download_media(c_thumb)
+            elif media_type == "video" and getattr(message.video, "thumbs", None):
+                ph_path = await client.download_media(message.video.thumbs[0].file_id)
+
+            if ph_path:
+                def _resize_thumb(path):
+                    img = Image.open(path).convert("RGB")
+                    img = img.resize((320, 320))
+                    img.save(path, "JPEG")
+                await asyncio.to_thread(_resize_thumb, ph_path)
+
+            async with upload_semaphore:
+                try:
+                    if media_type == "document":
+                        await client.send_document(
+                            message.chat.id,
+                            document=path,
+                            thumb=ph_path,
+                            caption=caption,
+                            progress=progress_for_pyrogram,
+                            progress_args=("Upload started dude...!!", upload_msg, time.time()),
+                        )
+                    elif media_type == "video":
+                        await client.send_video(
+                            message.chat.id,
+                            video=path,
+                            caption=caption,
+                            thumb=ph_path,
+                            duration=0,
+                            progress=progress_for_pyrogram,
+                            progress_args=("Upload started dude...!!", upload_msg, time.time()),
+                        )
+                    elif media_type == "audio":
+                        await client.send_audio(
+                            message.chat.id,
+                            audio=path,
+                            caption=caption,
+                            thumb=ph_path,
+                            duration=0,
+                            progress=progress_for_pyrogram,
+                            progress_args=("Upload started dude...!!", upload_msg, time.time()),
+                        )
+                except Exception as e:
+                    if os.path.exists(renamed_file_path):
+                        os.remove(renamed_file_path)
+                    if ph_path and os.path.exists(ph_path):
+                        os.remove(ph_path)
+                    del renaming_operations[file_id]
+                    return await upload_msg.edit(str(e))
+
+            await download_msg.delete()
+
+            if os.path.exists(path):
+                os.remove(path)
+            if ph_path and os.path.exists(ph_path):
+                os.remove(ph_path)
+            if os.path.exists(renamed_file_path):
+                os.remove(renamed_file_path)
+            if os.path.exists(metadata_file_path):
+                os.remove(metadata_file_path)
+            if file_id in renaming_operations:
+                del renaming_operations[file_id]
+
+        except Exception as e:
+            del renaming_operations[file_id]
+            return await download_msg.edit(f"Metadata/Processing Error: {e}")
+
+    except Exception as e:
+        if 'file_id' in locals() and file_id in renaming_operations:
+            del renaming_operations[file_id]
+        raise
+
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
 async def end_sequence(client, message: Message):
