@@ -158,10 +158,8 @@ async def start_sequence(client, message: Message):
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 @check_ban
-async def handle_file(client, message):
+async def initiate_manual_rename(client, message):
     user_id = message.from_user.id
-    mode = await codeflixbots.get_rename_mode(user_id)
-
     file_id = (
         message.document.file_id if message.document else
         message.video.file_id if message.video else
@@ -175,28 +173,70 @@ async def handle_file(client, message):
     file_info = {
         "file_id": file_id,
         "file_name": file_name if file_name else "Unknown",
-        "message": message,
-        "episode_num": extract_episode_number(file_name if file_name else "Unknown")
+        "message": message
     }
+    pending_manual_rename[user_id] = file_info
+    await message.reply_text(
+        f"File '{file_name}' received! Click 'START RENAME' to set a new name.",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("START RENAME", callback_data="start_manual_rename")],
+            [InlineKeyboardButton("CANCEL", callback_data="cancel_manual")]
+        ])
+    )
 
-    if user_id in active_sequences:
-        active_sequences[user_id].append(file_info)
-        reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
-        message_ids[user_id].append(reply_msg.message_id)
+@Client.on_callback_query(filters.regex("^start_manual_rename"))
+async def start_manual_rename(client, callback_query):
+    user_id = callback_query.from_user.id
+    if user_id not in pending_manual_rename:
+        await callback_query.answer("No file is pending for renaming.", show_alert=True)
+        return
+    
+    file_info = pending_manual_rename[user_id]
+    await callback_query.message.edit_text(
+        f"Current file: {file_info['file_name']}\nPlease enter the new file name:",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("CANCEL", callback_data="cancel_manual")]
+        ])
+    )
+
+@Client.on_message(filters.private & filters.text & filters.reply)
+@check_ban
+async def manual_rename_reply(client, message):
+    user_id = message.from_user.id
+    if user_id not in pending_manual_rename:
         return
 
-    if mode == "manual":
-        pending_manual_rename[user_id] = file_info
-        await message.reply_text(
-            f"File '{file_name}' received! Click 'START RENAME' to set a new name.",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("START RENAME", callback_data="start_manual_rename")],
-                [InlineKeyboardButton("CANCEL", callback_data="cancel_manual")]
-            ])
-        )
+    new_name = message.text.strip()
+    if not new_name:
+        await message.reply_text("Please provide a valid file name.")
         return
 
-    asyncio.create_task(auto_rename_file(client, message, file_info))
+    file_info = pending_manual_rename.pop(user_id)
+    await manual_rename_file(client, message, file_info, new_name)
+
+@Client.on_callback_query(filters.regex("^cancel_manual"))
+async def cancel_manual_rename(client, callback_query):
+    user_id = callback_query.from_user.id
+    if user_id in pending_manual_rename:
+        del pending_manual_rename[user_id]
+        await callback_query.message.edit_text("Manual rename cancelled.")
+    else:
+        await callback_query.answer("No pending manual rename to cancel.", show_alert=True)
+
+async def manual_rename_file(client, message, file_info, new_name):
+    try:
+        user_id = message.from_user.id
+        file_id = file_info["file_id"]
+        file_name = file_info["file_name"]
+        media_preference = await codeflixbots.get_media_preference(user_id)
+
+        if await check_anti_nsfw(file_name, message):
+            return await message.reply_text("NSFW content detected. File upload rejected.")
+
+        if file_id in renaming_operations:
+            elapsed_time = (datetime.now() - renaming_operations[file_id]).seconds
+            if elapsed_time < 10:
+                return
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
 @check_ban
