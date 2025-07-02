@@ -4,7 +4,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 from helper.database import codeflixbots
-from conig import *
+from config import *
 from config import Config
 from functools import wraps
 
