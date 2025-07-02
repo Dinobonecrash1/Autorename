@@ -1,8 +1,12 @@
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from helper.database import codeflixbots
 from functools import wraps
-from filerename import pending_manual_rename, manual_rename_file  
+from filerename import pending_manual_rename, manual_rename_file 
+
+
+pending_manual_rename = {} 
 
 
 
@@ -19,7 +23,7 @@ def check_ban(func):
 
 @Client.on_message(filters.private & filters.command("autorename"))
 @check_ban
-async def auto_rename_command(client, message):
+async def auto_rename_command(client, message,file_info):
     user_id = message.from_user.id
 
     # Extract and validate the format from the command
@@ -44,6 +48,7 @@ async def auto_rename_command(client, message):
         f"**Your saved template:** `{format_template}`\n\n"
         "Remember, it might take some time, but I'll ensure your files are renamed perfectly!✨"
     )
+    pass
 
 @Client.on_message(filters.private & filters.command("setmedia"))
 @check_ban
