@@ -77,58 +77,37 @@ async def start(client, message: Message):
             disable_web_page_preview=True
         )
 
-@Client.on_message(filters.private & (filters.document | filters.audio | filters.video))
-async def rename_start(client, message):
+Client.on_message(filters.private & (filters.document | filters.audio | filters.video))
+async def rename_start(client, message: Message):
     user_id = message.from_user.id
     mode = await codeflixbots.get_rename_mode(user_id)
-
-    # Only show the prompt in manual mode
+    print(f"User {user_id} mode: {mode}")
     if mode != "manual":
         return  # Do nothing in auto mode
+
     file = getattr(message, message.media.value)
     filename = file.file_name
     filesize = humanize.naturalsize(file.file_size)
 
-    # File size check (2GB limit)
     if file.file_size > 2000 * 1024 * 1024:
         return await message.reply_text(
-            "Sᴏʀʀy Bʀᴏ Tʜɪꜱ Bᴏᴛ Iꜱ Dᴏᴇꜱɴ'ᴛ Sᴜᴩᴩᴏʀᴛ Uᴩʟᴏᴀᴅɪɴɢ Fɪʟᴇꜱ Bɪɢɢᴇʀ Tʜᴀɴ 2Gʙ"
+            "Sorry, this bot doesn't support files larger than 2GB."
         )
 
-    try:
-        text = (
-            f"**__ᴡʜᴀᴛ ᴅᴏ ʏᴏᴜ ᴡᴀɴᴛ ᴍᴇ ᴛᴏ ᴅᴏ ᴡɪᴛʜ ᴛʜɪs ғɪʟᴇ.?__**\n\n"
-            f"**ғɪʟᴇ ɴᴀᴍᴇ** :- `{filename}`\n\n"
-            f"**ғɪʟᴇ sɪᴢᴇ** :- `{filesize}`"
-        )
-        buttons = [
-            [InlineKeyboardButton("📝 sᴛᴀʀᴛ ʀᴇɴᴀᴍᴇ 📝", callback_data="rename")],
-            [InlineKeyboardButton("✖️ ᴄᴀɴᴄᴇʟ ✖️", callback_data="close")]
-        ]
-        await message.reply_text(
-            text=text,
-            reply_to_message_id=message.id,
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
-    except FloodWait as e:
-        await asyncio.sleep(e.value)
-        text = (
-            f"**__What do you want me to do with this file.?__**\n\n"
-            f"**File Name** :- `{filename}`\n\n"
-            f"**File Size** :- `{filesize}`"
-        )
-        buttons = [
-            [InlineKeyboardButton("📝 sᴛᴀʀᴛ ʀᴇɴᴀᴍᴇ 📝", callback_data="rename")],
-            [InlineKeyboardButton("✖️ ᴄᴀɴᴄᴇʟ ✖️", callback_data="close")]
-        ]
-        await message.reply_text(
-            text=text,
-            reply_to_message_id=message.id,
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
-    except Exception:
-        pass
-
+    text = (
+        f"**__What do you want me to do with this file?__**\n\n"
+        f"**File Name** :- `{filename}`\n"
+        f"**File Size** :- `{filesize}`"
+    )
+    buttons = [
+        [InlineKeyboardButton("📝 Start Rename", callback_data="rename")],
+        [InlineKeyboardButton("✖️ Cancel", callback_data="close")]
+    ]
+    await message.reply_text(
+        text=text,
+        reply_to_message_id=message.id,
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
 
 # Updated Callback Query Handler
 @Client.on_callback_query()
