@@ -272,12 +272,12 @@ async def cb_handler(client, query: CallbackQuery):
     
     
     elif data == "close":
-    try:
-        await query.message.delete()
-        if query.message.reply_to_message:
-            await query.message.reply_to_message.delete()
-    except Exception as e:
-        pass  # Optionally log e
-    return
+        try:
+           await query.message.delete()
+           if query.message.reply_to_message:
+               await query.message.reply_to_message.delete()
+        except Exception as e:
+            pass  # Optionally log e
+        return
 
    
