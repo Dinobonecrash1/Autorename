@@ -3,8 +3,8 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from helper.database import codeflixbots
 from functools import wraps
-from filerename import pending_manual_rename, manual_rename_file 
 from file_rename import auto_rename_file
+from filerename import pending_manual_rename, manual_rename_file
 
 
 pending_manual_rename = {} 
