@@ -24,7 +24,7 @@ renaming_operations = {}
 download_semaphore = asyncio.Semaphore(5)  # Allow 5 concurrent downloads
 upload_semaphore = asyncio.Semaphore(3)    # Allow 3 concurrent uploads
 
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import ForceReply, InlineKeyboardMarkup, InlineKeyboardButton
  # Ensure you import the variable from your config
 
 def check_ban(func):
