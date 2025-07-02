@@ -4,6 +4,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 from helper.database import codeflixbots
+from file_rename import auto_rename_file, manual_rename_file
 from config import *
 from config import Config
 from functools import wraps
