@@ -23,7 +23,7 @@ def check_ban(func):
 
 @Client.on_message(filters.private & filters.command("autorename"))
 @check_ban
-async def auto_rename_command(client, message,file_info):
+async def auto_rename_command(client, message):
     user_id = message.from_user.id
 
     # Extract and validate the format from the command
