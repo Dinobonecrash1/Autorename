@@ -13,7 +13,7 @@ from helper.database import codeflixbots
 from config import Config
 from functools import wraps
 from pyrogram.enums import MessageMediaType
-from filerename import pending_manual_rename, manual_rename_file  
+from filerename import  
 
 ADMIN_URL = Config.ADMIN_URL
 
