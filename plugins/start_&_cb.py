@@ -331,3 +331,52 @@ async def cb_handler(client, query: CallbackQuery):
         except Exception as e:
             pass  # Optionally log e
         return
+
+from pyrogram.types import ForceReply
+
+@Client.on_callback_query(filters.regex('rename'))
+async def manual_rename_ask_name(client, query):
+    user_id = query.from_user.id
+    mode = await codeflixbots.get_rename_mode(user_id)
+    if mode != "manual":
+        return await query.answer("Manual renaming is only available in manual mode.", show_alert=True)
+    await query.message.delete()
+    await query.message.reply_text(
+        "__ᴘʟᴇᴀsᴇ ᴇɴᴛᴇʀ ɴᴇᴡ ғɪʟᴇ ɴᴀᴍᴇ..__",
+        reply_to_message_id=query.message.reply_to_message.id if query.message.reply_to_message else None,
+        reply_markup=ForceReply(True)
+    )
+    
+@Client.on_message(filters.private & filters.reply)
+async def manual_rename_receive_name(client, message):
+    reply_message = message.reply_to_message
+    if isinstance(reply_message.reply_markup, ForceReply):
+        user_id = message.from_user.id
+        mode = await codeflixbots.get_rename_mode(user_id)
+        if mode != "manual":
+            return await message.reply("Manual renaming is only available in manual mode.\nSwitch to manual mode first.")
+
+        new_name = message.text
+        await message.delete()
+        msg = await client.get_messages(message.chat.id, reply_message.id)
+        file = msg.reply_to_message
+        media = getattr(file, file.media.value)
+        # Extension handling
+        if '.' not in new_name:
+            extn = media.file_name.rsplit('.', 1)[-1] if '.' in media.file_name else "mkv"
+            new_name += '.' + extn
+        await reply_message.delete()
+
+        buttons = [
+            [InlineKeyboardButton("📁 Dᴏᴄᴜᴍᴇɴᴛ", callback_data="upload_document")]
+        ]
+        if file.media in [MediaType.VIDEO, MediaType.DOCUMENT]:
+            buttons.append([InlineKeyboardButton("🎥 Vɪᴅᴇᴏ", callback_data="upload_video")])
+        elif file.media == MediaType.AUDIO:
+            buttons.append([InlineKeyboardButton("🎵 Aᴜᴅɪᴏ", callback_data="upload_audio")])
+
+        await message.reply(
+            text=f"**Sᴇʟᴇᴄᴛ Tʜᴇ Oᴜᴛᴩᴜᴛ Fɪʟᴇ Tʏᴩᴇ**\n**• Fɪʟᴇ Nᴀᴍᴇ :-**  `{new_name}`",
+            reply_to_message_id=file.id,
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
