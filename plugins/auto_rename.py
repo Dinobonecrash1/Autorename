@@ -77,5 +77,41 @@ async def handle_media_selection(client, callback_query):
     await callback_query.answer(f"Media preference set to: {media_type} ✅")
     await callback_query.message.edit_text(f"**Media preference set to:** {media_type} ✅")
 
+@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
+@check_ban
+async def handle_file(client, message):
+    user_id = message.from_user.id
+    mode = await codeflixbots.get_rename_mode(user_id)
+
+    file_id = (
+        message.document.file_id if message.document else
+        message.video.file_id if message.video else
+        message.audio.file_id
+    )
+    file_name = (
+        message.document.file_name if message.document else
+        message.video.file_name if message.video else
+        message.audio.file_name
+    )
+    file_info = {
+        "file_id": file_id,
+        "file_name": file_name if file_name else "Unknown",
+        "message": message
+    }
+
+    if mode == "manual":
+        pending_manual_rename[user_id] = file_info
+        await message.reply_text(
+            f"File '{file_name}' received! Click 'START RENAME' to set a new name.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("START RENAME", callback_data="start_manual_rename")],
+                [InlineKeyboardButton("CANCEL", callback_data="cancel_manual")]
+            ])
+        )
+        return
+
+    else:  # mode == "auto"
+        asyncio.create_task(auto_rename_file(client, message, file_info))
+
 
 
