@@ -79,6 +79,12 @@ async def start(client, message: Message):
 
 @Client.on_message(filters.private & (filters.document | filters.audio | filters.video))
 async def rename_start(client, message):
+    user_id = message.from_user.id
+    mode = await codeflixbots.get_rename_mode(user_id)
+
+    # Only show the prompt in manual mode
+    if mode != "manual":
+        return  # Do nothing in auto mode
     file = getattr(message, message.media.value)
     filename = file.file_name
     filesize = humanize.naturalsize(file.file_size)
