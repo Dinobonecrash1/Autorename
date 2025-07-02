@@ -119,5 +119,35 @@ async def handle_file(client, message):
     else:  # mode == "auto"
         asyncio.create_task(auto_rename_file(client, message, file_info))
 
+@Client.on_callback_query(filters.regex("^start_manual_rename"))
+async def start_manual_rename(client, callback_query):
+    user_id = callback_query.from_user.id
+    if user_id not in pending_manual_rename:
+        await callback_query.answer("No file is pending for renaming.", show_alert=True)
+        return
+    
+    file_info = pending_manual_rename[user_id]
+    await callback_query.message.edit_text(
+        f"Current file: {file_info['file_name']}\nPlease enter the new file name:",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("CANCEL", callback_data="cancel_manual")]
+        ])
+    )
+
+@Client.on_message(filters.private & filters.text & filters.reply)
+@check_ban
+async def manual_rename_reply(client, message):
+    user_id = message.from_user.id
+    if user_id not in pending_manual_rename:
+        return
+
+    new_name = message.text.strip()
+    if not new_name:
+        await message.reply_text("Please provide a valid file name.")
+        return
+
+    file_info = pending_manual_rename.pop(user_id)
+    await manual_rename_file(client, message, file_info, new_name)
+
 
 
