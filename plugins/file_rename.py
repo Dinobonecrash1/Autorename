@@ -413,6 +413,14 @@ async def doc(bot, update):
 @check_ban
 async def auto_rename_files(client, message):
     user_id = message.from_user.id
+
+    # Check user's mode first
+    user_mode = await db.get_rename_mode(user_id)  # Should return 'auto' or 'manual'
+    if user_mode != "auto":
+        # Optionally, you can notify the user:
+        # await message.reply_text("Auto rename is only available in auto mode. Switch to auto mode with /mode.")
+        return
+
     file_id = (
         message.document.file_id if message.document else
         message.video.file_id if message.video else
