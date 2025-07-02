@@ -176,8 +176,15 @@ async def handle_file(client, message):
     file_info = {
         "file_id": file_id,
         "file_name": file_name if file_name else "Unknown",
-        "message": message
+        "message": message,
+        "episode_num": extract_episode_number(file_name if file_name else "Unknown")
     }
+
+    if user_id in active_sequences:
+        active_sequences[user_id].append(file_info)
+        reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
+        message_ids[user_id].append(reply_msg.message_id)
+        return
 
     if mode == "manual":
         pending_manual_rename[user_id] = file_info
@@ -190,33 +197,6 @@ async def handle_file(client, message):
         )
         return
 
-    else:  # mode == "auto"
-        asyncio.create_task(auto_rename_file(client, message, file_info))
-    user_id = message.from_user.id
-    file_id = (
-        message.document.file_id if message.document else
-        message.video.file_id if message.video else
-        message.audio.file_id
-    )
-    file_name = (
-        message.document.file_name if message.document else
-        message.video.file_name if message.video else
-        message.audio.file_name
-    )
-    file_info = {
-        "file_id": file_id, 
-        "file_name": file_name if file_name else "Unknown",
-        "message": message,  # Store the entire message for later processing
-        "episode_num": extract_episode_number(file_name if file_name else "Unknown")
-    }
-
-    if user_id in active_sequences:
-        active_sequences[user_id].append(file_info)
-        reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
-        message_ids[user_id].append(reply_msg.message_id)
-        return
-
-    # Not in sequence: Create concurrent task for auto renaming
     asyncio.create_task(auto_rename_file(client, message, file_info))
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
