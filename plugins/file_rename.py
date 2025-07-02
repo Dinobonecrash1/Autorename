@@ -203,7 +203,7 @@ async def handle_manual_rename(client, message):
             reply_to_message_id=file.id,
             reply_markup=InlineKeyboardMarkup(buttons)
 
- @Client.on_callback_query(filters.regex("upload"))
+@Client.on_callback_query(filters.regex("upload"))
 async def doc(bot, update):
 
     # Creating Directory for Metadata
