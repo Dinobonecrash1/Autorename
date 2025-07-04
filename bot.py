@@ -17,7 +17,7 @@ SUPPORT_CHAT = os.environ.get("SUPPORT_CHAT", "@timecomenow0")
 class Bot(Client):
     def __init__(self):
         super().__init__(
-            name="codeflixbots",
+            "codeflixbots",  # ✅ positional session name
             api_id=Config.API_ID,
             api_hash=Config.API_HASH,
             bot_token=Config.BOT_TOKEN,
