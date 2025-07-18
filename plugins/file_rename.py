@@ -16,8 +16,6 @@ from helper.database import Botskingdom
 from config import Config
 from functools import wraps
 
-ADMIN_URL = Config.ADMIN_URL
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
