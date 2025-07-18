@@ -2,7 +2,7 @@ from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.errors import UserNotParticipant
 from config import Config
-from helper.database import codeflixbots
+from helper.database import Botskingdom
 
 async def not_subscribed(_, client, message):
     await codeflixbots.add_user(client, message)
