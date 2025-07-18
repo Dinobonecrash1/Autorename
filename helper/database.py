@@ -36,7 +36,7 @@ class Database:
     async def add_user(self, b, m):
         u = m.from_user
         if not await self.is_user_exist(u.id):
-            user = self.new_user(u.id)
+            user = self.new_user(u.id, u.username)
             try:
                 await self.col.insert_one(user)
                 await send_log(b, u)
@@ -208,3 +208,6 @@ class Database:
 
     async def get_banned_users():
         return db.banned_users.find()
+
+
+Botskingdom = Database(Config.DB_URL, Config.DB_NAME)
