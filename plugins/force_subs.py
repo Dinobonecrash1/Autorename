@@ -5,7 +5,7 @@ from config import Config
 from helper.database import Botskingdom
 
 async def not_subscribed(_, client, message):
-    await codeflixbots.add_user(client, message)
+    await Botskingdom.add_user(client, message)
     if not Config.FORCE_SUB:
         return False
     try:
