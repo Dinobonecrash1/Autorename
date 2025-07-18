@@ -37,22 +37,6 @@ thread_pool = ThreadPoolExecutor(max_workers=4)
 
 # ========== Decorators ==========
 
-def check_ban(func):
-    @wraps(func)
-    async def wrapper(client, message, *args, **kwargs):
-        user_id = message.from_user.id
-        user = await Botskingdom.col.find_one({"_id": user_id})
-        if user and user.get("ban_status", {}).get("is_banned", False):
-            keyboard = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Cᴏɴᴛᴀᴄᴛ ʜᴇʀᴇ...!!", url=ADMIN_URL)]]
-            )
-            return await message.reply_text(
-                "Wᴛғ ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜsɪɴɢ ᴍᴇ ʙʏ ᴏᴜʀ ᴀᴅᴍɪɴ/ᴏᴡɴᴇʀ . Iғ ʏᴏᴜ ᴛʜɪɴᴋs ɪᴛ's ᴍɪsᴛᴀᴋᴇ ᴄʟɪᴄᴋ ᴏɴ **ᴄᴏɴᴛᴀᴄᴛ ʜᴇʀᴇ...!!**",
-                reply_markup=keyboard
-            )
-        return await func(client, message, *args, **kwargs)
-    return wrapper
-
 
 def detect_quality(file_name):
     """Detects quality for sorting, not for direct filename replacement."""
@@ -321,7 +305,7 @@ def generate_unique_paths(renamed_file_name):
     return renamed_file_path, metadata_file_path, unique_file_name_for_storage
 
 @Client.on_message(filters.command("start_sequence") & filters.private)
-@check_ban
+
 async def start_sequence(client, message: Message):
     user_id = message.from_user.id
     if user_id in active_sequences:
@@ -333,7 +317,6 @@ async def start_sequence(client, message: Message):
         message_ids[user_id].append(msg.id)
 
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
-@check_ban
 async def auto_rename_files(client, message):
     user_id = message.from_user.id
 
@@ -364,7 +347,6 @@ async def auto_rename_files(client, message):
 
 
 @Client.on_message(filters.command("end_sequence") & filters.private)
-@check_ban
 async def end_sequence(client, message: Message):
     user_id = message.from_user.id
     if user_id not in active_sequences:
