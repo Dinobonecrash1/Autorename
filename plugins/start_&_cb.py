@@ -12,7 +12,7 @@ from config import Config
 @Client.on_message(filters.private & filters.command("start"))
 async def start(client, message: Message):
     user = message.from_user
-    await codeflixbots.add_user(client, message)
+    await Botskingdom.add_user(client, message)
 
     # Initial interactive text and sticker sequence
     m = await message.reply_text("Wᴇᴡ...Hᴏᴡ ᴀʀᴇ ʏᴏᴜ ᴅᴜᴅᴇ \nᴡᴀɪᴛ ᴀ ᴍᴏᴍᴇɴᴛ. . .")
