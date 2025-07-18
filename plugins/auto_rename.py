@@ -5,29 +5,11 @@ import logging
 from functools import wraps 
 from config import Config
 
-ADMIN_URL = Config.ADMIN_URL
-
-def check_ban(func):
-    @wraps(func)
-    async def wrapper(client, message, *args, **kwargs):
-        user_id = message.from_user.id
-        user = await Botskingdom.col.find_one({"_id": user_id})
-        if user and user.get("ban_status", {}).get("is_banned", False):
-            keyboard = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Cᴏɴᴛᴀᴄᴛ ʜᴇʀᴇ...!!", url=ADMIN_URL)]]
-            )
-            return await message.reply_text(
-                "Wᴛғ ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜsɪɴɢ ᴍᴇ ʙʏ ᴏᴜʀ ᴀᴅᴍɪɴ/ᴏᴡɴᴇʀ . Iғ ʏᴏᴜ ᴛʜɪɴᴋs ɪᴛ's ᴍɪsᴛᴀᴋᴇ ᴄʟɪᴄᴋ ᴏɴ **ᴄᴏɴᴛᴀᴄᴛ ʜᴇʀᴇ...!!**",
-                reply_markup=keyboard
-            )
-        return await func(client, message, *args, **kwargs)
-    return wrapper
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @Client.on_message(filters.private & filters.command("autorename"))
-@check_ban
 async def auto_rename_command(client, message):
     user_id = message.from_user.id
 
@@ -55,7 +37,6 @@ async def auto_rename_command(client, message):
     )
 
 @Client.on_message(filters.private & filters.command("setmedia"))
-@check_ban
 async def set_media_command(client, message):
     # Define inline keyboard buttons for media type selection
     keyboard = InlineKeyboardMarkup([
