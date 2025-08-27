@@ -210,4 +210,24 @@ class Database:
         return db.banned_users.find()
 
 
+    async def can_rename_file(user_id: int):
+    user = await col.find_one({"_id": user_id})
+    if not user:
+        return False, "Please start the bot first"
+    
+    is_premium = user.get("subscription", {}).get("is_premium", False)
+    if is_premium:
+        return True, "Premium user - unlimited"
+    
+    files_today = user.get("usage_stats", {}).get("files_renamed_today", 0)
+    if files_today >= 100:
+        return False, "Daily limit reached! Only 100 files per day."
+    
+    return True, f"{100 - files_today} files remaining today"
+
+async def increment_file_count(user_id: int):
+    await col.update_one({"_id": user_id}, {"$inc": {"usage_stats.files_renamed_today": 1}})
+    
+
+
 Botskingdom = Database(Config.DB_URL, Config.DB_NAME)
