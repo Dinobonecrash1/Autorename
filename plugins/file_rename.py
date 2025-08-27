@@ -17,6 +17,15 @@ from config import Config
 from functools import wraps
 
 
+# Add this function right after your imports in plugins/file_rename.py
+async def send_log(client, message, old_name, new_name):
+    try:
+        user = message.from_user
+        log_msg = f"🔄 User {user.first_name} (@{user.username or 'None'}) renamed: {old_name} → {new_name}"
+        await client.send_message(Config.LOG_CHANNEL, log_msg)
+    except:
+        pass  # If logging fails, just ignore
+        
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
