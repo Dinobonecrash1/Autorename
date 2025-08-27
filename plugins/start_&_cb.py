@@ -109,7 +109,6 @@ async def cb_handler(client, query: CallbackQuery):
         )
     elif data == "file_names":
         format_template = await codeflixbots.get_format_template(user_id)
-
         await query.message.edit_text(
             text=Txt.FILE_NAME_TXT.format(format_template=format_template),
             disable_web_page_preview=True,
