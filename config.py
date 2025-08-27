@@ -5,7 +5,7 @@ class Config(object):
     # pyro client config
     API_ID = os.environ.get("API_ID", "21518327")
     API_HASH = os.environ.get("API_HASH", "e72f588b3e4763f01eecfc3c4aa7e8ac")
-    BOT_TOKEN = os.environ.get("BOT_TOKEN", "7571014416:AAFQsPTMtXTerdwHVSaXPSmkbC-P3AeoMbs") 
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", "7012541014:AAFI2an6FRSqyZSYrXqyHuxYxSYeNNgNBiU") 
 
     # database config
     DB_NAME = os.environ.get("DB_NAME","Autorename")     
@@ -15,11 +15,11 @@ class Config(object):
     # other configs
     BOT_UPTIME  = time.time()
     START_PIC   = os.environ.get("START_PIC", "https://envs.sh/2Gj.jpg")
-    ADMIN       = [int(admin) if id_pattern.search(admin) else admin for admin in os.environ.get('ADMIN', '5741918628').split()]
-    FORCE_SUB   = os.environ.get("FORCE_SUB", "") 
-    LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", "-1001839965169"))
-    FSUB_PIC = os.environ.get("FSUB_PIC", "")
-    BOT_USERNAME = os.environ.get("BOT_USERNAME", "Auto_reanme_bbot")
+    ADMIN       = [int(admin) if id_pattern.search(admin) else admin for admin in os.environ.get('ADMIN', '5817124748').split()]
+    FORCE_SUB   = os.environ.get("FORCE_SUB", "0") 
+    LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", "-1003083608382"))
+    FSUB_PIC = os.environ.get("FSUB_PIC", "https://envs.sh/2Gj.jpg")
+    BOT_USERNAME = os.environ.get("BOT_USERNAME", "Raiden_Musicbot")
     # wes response configuration     
     WEBHOOK = bool(os.environ.get("WEBHOOK", "True"))
 
