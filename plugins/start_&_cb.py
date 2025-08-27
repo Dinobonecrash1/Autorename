@@ -60,7 +60,7 @@ async def cb_handler(client, query: CallbackQuery):
     data = query.data
     user_id = query.from_user.id
     
-    print(f"Callback data received: {data}")  # Debugging lin
+    print(f"Callback data received: {data}")  # Debugging line
 
     if data == "home":
         await query.message.edit_text(
@@ -93,8 +93,8 @@ async def cb_handler(client, query: CallbackQuery):
         )
 
     elif data == "meta":
-        await query.message.edit_text(  # Change edit_caption to edit_text
-            text=Txt.SEND_METADATA,  # Changed from caption to text
+        await query.message.edit_text(
+            text=Txt.SEND_METADATA,
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("• ᴄʟᴏsᴇ", callback_data="close"), InlineKeyboardButton("ʙᴀᴄᴋ •", callback_data="help")]
             ])
@@ -108,7 +108,8 @@ async def cb_handler(client, query: CallbackQuery):
             ])
         )
     elif data == "file_names":
-        format_template = await codeflixbots.get_format_template(user_id)
+        # Fixed: Changed codeflixbots to Botskingdom
+        format_template = await Botskingdom.get_format_template(user_id)
         await query.message.edit_text(
             text=Txt.FILE_NAME_TXT.format(format_template=format_template),
             disable_web_page_preview=True,
@@ -139,7 +140,6 @@ async def cb_handler(client, query: CallbackQuery):
                 InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="home")
             ]])          
         )
-    
     
     elif data == "close":
         try:
