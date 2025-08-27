@@ -3,6 +3,9 @@ id_pattern = re.compile(r'^.\d+$')
 
 class Config(object):
     # pyro client config
+    FREE_USER_DAILY_LIMIT = 100
+    PREMIUM_MONTHLY_PRICE = 9.99
+    PREMIUM_YEARLY_PRICE = 99.99
     API_ID = os.environ.get("API_ID", "21518327")
     API_HASH = os.environ.get("API_HASH", "e72f588b3e4763f01eecfc3c4aa7e8ac")
     BOT_TOKEN = os.environ.get("BOT_TOKEN", "7012541014:AAFI2an6FRSqyZSYrXqyHuxYxSYeNNgNBiU") 
