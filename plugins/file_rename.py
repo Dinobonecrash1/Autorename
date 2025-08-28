@@ -124,11 +124,14 @@ active_sequences = {}
 message_ids = {}
 renaming_operations = {}
 
-# --- Enhanced Semaphores for better concurrency ---
-download_semaphore = asyncio.Semaphore(3)  # Allow 3 concurrent downloads
-upload_semaphore = asyncio.Semaphore(3)  # Limit 3 concurrent uploads
-ffmpeg_semaphore = asyncio.Semaphore(3)  # Limit FFmpeg processes
-processing_semaphore = asyncio.Semaphore(3)  # Overall processing limit
+# --- High concurrency (CPU-aware for ffmpeg) ---
+CPU_CORES = os.cpu_count() or 4
+
+# Allow many users to work at once
+download_semaphore = asyncio.Semaphore(1000)   # basically unlimited downloads
+upload_semaphore = asyncio.Semaphore(1000)     # basically unlimited uploads
+ffmpeg_semaphore = asyncio.Semaphore(max(4, CPU_CORES))  # safe limit = CPU cores
+processing_semaphore = asyncio.Semaphore(1000) # allow many concurrent renames
 
 # Thread pool for CPU-intensive operations
 thread_pool = ThreadPoolExecutor(max_workers=4)
