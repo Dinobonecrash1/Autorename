@@ -1,83 +1,94 @@
 import re, os, time
-id_pattern = re.compile(r'^.\d+$') 
+
+# Match only digits for admin IDs
+id_pattern = re.compile(r'^\d+$')
 
 class Config(object):
-    # pyro client config
+    # ----- pyro client config -----
     API_ID = os.environ.get("API_ID", "21518327")
     API_HASH = os.environ.get("API_HASH", "e72f588b3e4763f01eecfc3c4aa7e8ac")
-    BOT_TOKEN = os.environ.get("BOT_TOKEN", "7012541014:AAFI2an6FRSqyZSYrXqyHuxYxSYeNNgNBiU") 
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", "7012541014:AAFI2an6FRSqyZSYrXqyHuxYxSYeNNgNBiU")
 
-    # Premium Configuration
+    # ----- Premium Configuration -----
     FREE_USER_DAILY_LIMIT = int(os.environ.get("FREE_USER_DAILY_LIMIT", "100"))
     PREMIUM_MONTHLY_PRICE = float(os.environ.get("PREMIUM_MONTHLY_PRICE", "9.99"))
     PREMIUM_YEARLY_PRICE = float(os.environ.get("PREMIUM_YEARLY_PRICE", "99.99"))
-    
-    # Payment Configuration
+
+    # ----- Payment Configuration -----
     ADMIN_UPI_ID = os.environ.get("ADMIN_UPI_ID", "your_upi@bank")
     ADMIN_PAYPAL = os.environ.get("ADMIN_PAYPAL", "your_paypal@email.com")
     CRYPTO_WALLET = os.environ.get("CRYPTO_WALLET", "your_crypto_wallet_address")
-    ADMIN_CONTACT = os.environ.get("ADMIN_CONTACT", "https://t.me/Zenitsu_AF")
-    SUPPORT_CHANNEL = os.environ.get("SUPPORT_CHANNEL", "https://t.me/the_Reaperss")
-    
-    # database config
-    DB_NAME = os.environ.get("DB_NAME","Autorename") 
-    DB_URL = os.environ.get("DB_URL","mongodb+srv://vinayjaat698:vinayjaat@autorename.6whzjfb.mongodb.net/?retryWrites=true&w=majority&appName=Autorename")
-    
-    # other configs
+    ADMIN_CONTACT = os.environ.get("ADMIN_CONTACT", "https://t.me/your_admin")
+    SUPPORT_CHANNEL = os.environ.get("SUPPORT_CHANNEL", "https://t.me/your_support")
+
+    # ----- database config -----
+    DB_NAME = os.environ.get("DB_NAME", "Autorename")
+    DB_URL = os.environ.get(
+        "DB_URL",
+        "mongodb+srv://vinayjaat698:vinayjaat@autorename.6whzjfb.mongodb.net/?retryWrites=true&w=majority&appName=Autorename"
+    )
+
+    # ----- other configs -----
     BOT_UPTIME = time.time()
     START_PIC = os.environ.get("START_PIC", "https://envs.sh/2Gj.jpg")
-    ADMIN = [int(admin) if id_pattern.search(admin) else admin for admin in os.environ.get('ADMIN', '5817124748').split()]
-    FORCE_SUB = os.environ.get("FORCE_SUB", "0") 
+    ADMIN = [int(admin) if id_pattern.search(admin) else admin
+             for admin in os.environ.get('ADMIN', '5817124748').split()]
+    FORCE_SUB = os.environ.get("FORCE_SUB", "0")
     LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", "-1003083608382"))
     FSUB_PIC = os.environ.get("FSUB_PIC", "https://envs.sh/2Gj.jpg")
     BOT_USERNAME = os.environ.get("BOT_USERNAME", "Raiden_Musicbot")
-    # web response configuration 
+
+    # web response configuration
     WEBHOOK = bool(os.environ.get("WEBHOOK", "True"))
 
 
 class Txt(object):
-    # part of text configuration
-    
-    START_TXT = """**ʜᴇʏ! {}** 
+    # ----- part of text configuration -----
+
+    START_TXT = """ʜᴇʏ! {}
 
 » ɪ ᴀᴍ ᴀᴅᴠᴀɴᴄᴇᴅ ʀᴇɴᴀᴍᴇ ʙᴏᴛ! ᴡʜɪᴄʜ ᴄᴀɴ ᴀᴜᴛᴏʀᴇɴᴀᴍᴇ ʏᴏᴜʀ ғɪʟᴇs ᴡɪᴛʜ ᴄᴜsᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ ᴀɴᴅ ᴛʜᴜᴍʙɴᴀɪʟ ᴀɴᴅ ᴀʟsᴏ sᴇǫᴜᴇɴᴄᴇ ᴛʜᴇᴍ ᴘᴇʀғᴇᴄᴛʟʏ
 
-🆓 **Free Users:** {0} files per day
-🌟 **Premium Users:** Unlimited files**
+🆓 Free Users: {free_limit} files/day
+🌟 Premium Users: Unlimited
+""".format(free_limit=Config.FREE_USER_DAILY_LIMIT)
 
-    FILE_NAME_TXT = """**» sᴇᴛᴜᴘ ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ ғᴏʀᴍᴀᴛ**
+    FILE_NAME_TXT = """» sᴇᴛᴜᴘ ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ ғᴏʀᴍᴀᴛ
 
-**ᴠᴀʀɪᴀʙʟᴇꜱ :**
+ᴠᴀʀɪᴀʙʟᴇꜱ :
 ➲ ᴇᴘɪꜱᴏᴅᴇ - ᴛᴏ ʀᴇᴘʟᴀᴄᴇ ᴇᴘɪꜱᴏᴅᴇ ɴᴜᴍʙᴇʀ
 ➲ ǫᴜᴀʟɪᴛʏ - ᴛᴏ ʀᴇᴘʟᴀᴄᴇ ǫᴜᴀʟɪᴛʏ
 
-**‣ ꜰᴏʀ ᴇx:-**   `/autorename Your Anime Name Here [S01 - EPepisode - [Quality] [Dual] @Animeworld_zone` 
+‣ ꜰᴏʀ ᴇx:- /autorename Your Anime Name Here [S01 - EPepisode - [Quality] [Dual] @Animeworld_zone
 
-**‣ /Autorename:** ʀᴇɴᴀᴍᴇ ʏᴏᴜʀ ᴍᴇᴅɪᴀ ꜰɪʟᴇꜱ ʙʏ ɪɴᴄʟᴜᴅɪɴɢ 'ᴇᴘɪꜱᴏᴅᴇ' ᴀɴᴅ 'ǫᴜᴀʟɪᴛʏ' ᴠᴀʀɪᴀʙʟᴇꜱ ɪɴ ʏᴏᴜʀ ᴛᴇxᴛ, ᴛᴏ ᴇxᴛʀᴀᴄᴛ ᴇᴘɪꜱᴏᴅᴇ ᴀɴᴅ ǫᴜᴀʟɪᴛʏ ᴘʀᴇꜱᴇɴᴛ ɪɴ ᴛʜᴇ ᴏʀɪɢɪɴᴀʟ ꜰɪʟᴇɴᴀᴍᴇ."""
-    
-    ABOUT_TXT = f"""**❍ ᴍʏ ɴᴀᴍᴇ : ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ
+‣ /Autorename: ʀᴇɴᴀᴍᴇ ʏᴏᴜʀ ᴍᴇᴅɪᴀ ꜰɪʟᴇꜱ ʙʏ ɪɴᴄʟᴜᴅɪɴɢ 'ᴇᴘɪꜱᴏᴅᴇ' ᴀɴᴅ 'ǫᴜᴀʟɪᴛʏ' ᴠᴀʀɪᴀʙʟᴇꜱ ɪɴ ʏᴏᴜʀ ᴛᴇxᴛ, ᴛᴏ ᴇxᴛʀᴀᴄᴛ ᴇᴘɪꜱᴏᴅᴇ ᴀɴᴅ ǫᴜᴀʟɪᴛʏ ᴘʀᴇꜱᴇɴᴛ ɪɴ ᴛʜᴇ ᴏʀɪɢɪɴᴀʟ ꜰɪʟᴇɴᴀᴍᴇ.
+"""
+
+    ABOUT_TXT = f"""❍ ᴍʏ ɴᴀᴍᴇ : ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ
 ❍ ᴅᴇᴠᴇʟᴏᴩᴇʀ : Bot
 ❍ ʟᴀɴɢᴜᴀɢᴇ : ᴘʏᴛʜᴏɴ
 ❍ ᴅᴀᴛᴀʙᴀꜱᴇ : ᴍᴏɴɢᴏ ᴅʙ
 ❍ ʜᴏꜱᴛᴇᴅ ᴏɴ : error...Not found...
 ❍ ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ : ANIME ZONE
 
-🆓 **Free:** {Config.FREE_USER_DAILY_LIMIT} files/day
-🌟 **Premium:** Unlimited files
+🆓 Free: {Config.FREE_USER_DAILY_LIMIT} files/day
+🌟 Premium: Unlimited files
 
-➻ ᴄʟɪᴄᴋ ᴏɴ ᴛʜᴇ ʙᴜᴛᴛᴏɴs ɢɪᴠᴇɴ ʙᴇʟᴏᴡ ғᴏʀ ɢᴇᴛᴛɪɴɢ ʙᴀsɪᴄ ʜᴇʟᴩ ᴀɴᴅ ɪɴғᴏ ᴀʙᴏᴜᴛ ᴍᴇ.**"""
+➻ ᴄʟɪᴄᴋ ᴏɴ ᴛʜᴇ ʙᴜᴛᴛᴏɴs ɢɪᴠᴇɴ ʙᴇʟᴏᴡ ғᴏʀ ɢᴇᴛᴛɪɴɢ ʙᴀsɪᴄ ʜᴇʟᴩ ᴀɴᴅ ɪɴғᴏ ᴀʙᴏᴜᴛ ᴍᴇ.
+"""
 
-    THUMBNAIL_TXT = """**» ᴛᴏ ꜱᴇᴛ ᴄᴜꜱᴛᴏᴍ ᴛʜᴜᴍʙɴᴀɪʟ**
- 
+    THUMBNAIL_TXT = """» ᴛᴏ ꜱᴇᴛ ᴄᴜꜱᴛᴏᴍ ᴛʜᴜᴍʙɴᴀɪʟ
+
 ➲ /start: ꜱᴇɴᴅ ᴀɴʏ ᴘʜᴏᴛᴏ ᴛᴏ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ꜱᴇᴛ ɪᴛ ᴀꜱ ᴀ ᴛʜᴜᴍʙɴᴀɪʟ..
 ➲ /del_thumb: ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴛᴏ ᴅᴇʟᴇᴛᴇ ʏᴏᴜʀ ᴏʟᴅ ᴛʜᴜᴍʙɴᴀɪʟ.
 ➲ /view_thumb: ᴜꜱᴇ ᴛʜɪꜱ ᴄᴏᴍᴍᴀɴᴅ ᴛᴏ ᴠɪᴇᴡ ʏᴏᴜʀ ᴄᴜʀʀᴇɴᴛ ᴛʜᴜᴍʙɴᴀɪʟ.
 
-ɴᴏᴛᴇ: ɪꜰ ɴᴏ ᴛʜᴜᴍʙɴᴀɪʟ ꜱᴀᴠᴇᴅ ɪɴ ʙᴏᴛ ᴛʜᴇɴ, ɪᴛ ᴡɪʟʟ ᴜꜱᴇ ᴛʜᴜᴍʙɴᴀɪʟ ᴏꜰ ᴛʜᴇ ᴏʀɪɢɪɴɪᴀʟ ꜰɪʟᴇ ᴛᴏ ꜱᴇᴛ ɪɴ ʀᴇɴᴀᴍᴇᴅ ꜰɪʟᴇ"""
+ɴᴏᴛᴇ: ɪꜰ ɴᴏ ᴛʜᴜᴍʙɴᴀɪʟ ꜱᴀᴠᴇᴅ ɪɴ ʙᴏᴛ ᴛʜᴇɴ, ɪᴛ ᴡɪʟʟ ᴜꜱᴇ ᴛʜᴜᴍʙɴᴀɪʟ ᴏꜰ ᴛʜᴇ ᴏʀɪɢɪɴᴀʟ ꜰɪʟᴇ ᴛᴏ ꜱᴇᴛ ɪɴ ʀᴇɴᴀᴍᴇᴅ ꜰɪʟᴇ
+"""
 
-    CAPTION_TXT = """**» ᴛᴏ ꜱᴇᴛ ᴄᴜꜱᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ ᴀɴᴅ ᴍᴇᴅɪᴀ ᴛʏᴘᴇ**
- 
-**ᴠᴀʀɪᴀʙʟᴇꜱ :** 
+    CAPTION_TXT = """» ᴛᴏ ꜱᴇᴛ ᴄᴜꜱᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ ᴀɴᴅ ᴍᴇᴅɪᴀ ᴛʏᴘᴇ
+
+ᴠᴀʀɪᴀʙʟᴇꜱ :
 ꜱɪᴢᴇ: {ꜰɪʟᴇꜱɪᴢᴇ}
 ᴅᴜʀᴀᴛɪᴏɴ: {duration}
 ꜰɪʟᴇɴᴀᴍᴇ: {ꜰɪʟᴇɴᴀᴍᴇ}
@@ -86,31 +97,34 @@ class Txt(object):
 ➲ /see_caption: ᴛᴏ ᴠɪᴇᴡ ʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ.
 ➲ /del_caption: ᴛᴏ ᴅᴇʟᴇᴛᴇ ʏᴏᴜʀ ᴄᴜꜱᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ.
 
-» ꜰᴏʀ ᴇx:- /set_caption ꜰɪʟᴇ ɴᴀᴍᴇ: {ꜰɪʟᴇɴᴀᴍᴇ}"""
+» ꜰᴏʀ ᴇx:- /set_caption ꜰɪʟᴇ ɴᴀᴍᴇ: {ꜰɪʟᴇɴᴀᴍᴇ}
+"""
 
-    PROGRESS_BAR = """\n
-**📁 Size** : {1} | {2}
-**⏳️ Done** : {0}%
-**🚀 Speed** : {3}/s
-**⏰️ ETA** : {4} """
- 
+    PROGRESS_BAR = """
+📁 Size : {1} | {2}
+⏳️ Done : {0}%
+🚀 Speed : {3}/s
+⏰️ ETA : {4}
+"""
+
     DONATE_TXT = """
-> ᴛʜᴀɴᴋs ғᴏʀ sʜᴏᴡɪɴɢ ɪɴᴛᴇʀᴇsᴛ ɪɴ ᴅᴏɴᴀᴛɪᴏɴ
+ᴛʜᴀɴᴋs ғᴏʀ sʜᴏᴡɪɴɢ ɪɴᴛᴇʀᴇsᴛ ɪɴ ᴅᴏɴᴀᴛɪᴏɴ
 
-***💞 ɪꜰ ʏᴏᴜ ʟɪᴋᴇ ᴏᴜʀ ʙᴏᴛ ꜰᴇᴇʟ ꜰʀᴇᴇ ᴛᴏ ᴅᴏɴᴀᴛᴇ ᴀɴʏ ᴀᴍᴏᴜɴᴛ ₹𝟷𝟶, ₹𝟸𝟶, ₹𝟻𝟶, ₹𝟷𝟶𝟶, ᴇᴛᴄ.***
+💞 ɪꜰ ʏᴏᴜ ʟɪᴋᴇ ᴏᴜʀ ʙᴏᴛ ꜰᴇᴇʟ ꜰʀᴇᴇ ᴛᴏ ᴅᴏɴᴀᴛᴇ ᴀɴʏ ᴀᴍᴏᴜɴᴛ ₹𝟷𝟶, ₹𝟸𝟶, ₹𝟻𝟶, ₹𝟷𝟶𝟶, ᴇᴛᴄ.
 
 ᴅᴏɴᴀᴛɪᴏɴs ᴀʀᴇ ʀᴇᴀʟʟʏ ᴀᴘᴘʀᴇᴄɪᴀᴛᴇᴅ ɪᴛ ʜᴇʟᴘs ɪɴ ʙᴏᴛ ᴅᴇᴠᴇʟᴏᴘᴍᴇɴᴛ
 
- ʏᴏᴜ ᴄᴀɴ ᴀʟsᴏ ᴅᴏɴᴀᴛᴇ ᴛʜʀᴏᴜɢʜ ᴜᴘɪ
+ʏᴏᴜ ᴄᴀɴ ᴀʟsᴏ ᴅᴏɴᴀᴛᴇ ᴛʜʀᴏᴜɢʜ ᴜᴘɪ
 
- ᴜᴘɪ ɪᴅ : 404.....
+ᴜᴘɪ ɪᴅ : 404.....
 
 ɪғ ʏᴏᴜ ᴡɪsʜ ʏᴏᴜ ᴄᴀɴ sᴇɴᴅ ᴜs ss
-ᴏɴ - 404...."""
+ᴏɴ - 404....
+"""
 
-    HELP_TXT = """**ʜᴇʀᴇ ɪꜱ ʜᴇʟᴘ ᴍᴇɴᴜ ɪᴍᴘᴏʀᴛᴀɴᴛ ᴄᴏᴍᴍᴀɴᴅꜱ:**
+    HELP_TXT = f"""ʜᴇʀᴇ ɪꜱ ʜᴇʟᴘ ᴍᴇɴᴜ ɪᴍᴘᴏʀᴛᴀɴᴛ ᴄᴏᴍᴍᴀɴᴅꜱ:
 
-**ᴀᴡᴇsᴏᴍᴇ ғᴇᴀᴛᴜʀᴇs🫧**
+ᴀᴡᴇsᴏᴍᴇ ғᴇᴀᴛᴜʀᴇs🫧
 
 ʀᴇɴᴀᴍᴇ ʙᴏᴛ ɪꜱ ᴀ ʜᴀɴᴅʏ ᴛᴏᴏʟ ᴛʜᴀᴛ ʜᴇʟᴘꜱ ʏᴏᴜ ʀᴇɴᴀᴍᴇ ᴀɴᴅ ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ꜰɪʟᴇꜱ ᴇꜰꜰᴏʀᴛʟᴇꜱꜱʟʏ.
 
@@ -120,32 +134,34 @@ class Txt(object):
 ➲ /metadata: ᴄᴏᴍᴍᴀɴᴅꜱ ᴛᴏ ᴛᴜʀɴ ᴏɴ ᴏғғ ᴍᴇᴛᴀᴅᴀᴛᴀ.
 ➲ /help: ɢᴇᴛ ǫᴜɪᴄᴋ ᴀꜱꜱɪꜱᴛᴀɴᴄᴇ.
 
-🆓 **Free Users:** {Config.FREE_USER_DAILY_LIMIT} files per day
-🌟 **Premium Users:** Unlimited files + Priority processing**
+🆓 Free Users: {Config.FREE_USER_DAILY_LIMIT} files per day
+🌟 Premium Users: Unlimited files + Priority processing
+"""
 
     SEND_METADATA = """
-**--Metadata Settings:--**
+--Metadata Settings:--
 
 ➜ /metadata: Turn on or off metadata.
 
-**Description** : Metadata will change MKV video files including all audio, streams, and subtitle titles."""
+Description : Metadata will change MKV video files including all audio, streams, and subtitle titles.
+"""
 
     META_TXT = """
 **ᴍᴀɴᴀɢɪɴɢ ᴍᴇᴛᴀᴅᴀᴛᴀ ғᴏʀ ʏᴏᴜʀ ᴠɪᴅᴇᴏs ᴀɴᴅ ғɪʟᴇs**
 
-**ᴠᴀʀɪᴏᴜs ᴍᴇᴛᴀᴅᴀᴛᴀ:**
+**ᴠᴀʀɪᴏᴜꜱ ᴍᴇᴛᴀᴅᴀᴛᴀ:**
 
 - **ᴛɪᴛʟᴇ**: Descriptive title of the media.
 - **ᴀᴜᴛʜᴏʀ**: The creator or owner of the media.
 - **ᴀʀᴛɪsᴛ**: The artist associated with the media.
 - **ᴀᴜᴅɪᴏ**: Title or description of audio content.
-- **sᴜʙᴛɪᴛʟᴇ**: Title of subtitle content.
+- **ꜱᴜʙᴛɪᴛʟᴇ**: Title of subtitle content.
 - **ᴠɪᴅᴇᴏ**: Title or description of video content.
 
-**ᴄᴏᴍᴍᴀɴᴅs ᴛᴏ ᴛᴜʀɴ ᴏɴ ᴏғғ ᴍᴇᴛᴀᴅᴀᴛᴀ:**
+**ᴄᴏᴍᴍᴀɴᴅꜱ ᴛᴏ ᴛᴜʀɴ ᴏɴ ᴏғғ ᴍᴇᴛᴀᴅᴀᴛᴀ:**
 ➜ /metadata: Turn on or off metadata.
 
-**ᴄᴏᴍᴍᴀɴᴅs ᴛᴏ sᴇᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ:**
+**ᴄᴏᴍᴍᴀɴᴅꜱ ᴛᴏ ꜱᴇᴛ ᴍᴇᴛᴀᴅᴀᴛᴀ:**
 
 ➜ /settitle: Set a custom title of media.
 ➜ /setauthor: Set the author.
@@ -158,16 +174,17 @@ class Txt(object):
 
 **ᴇxᴀᴍᴘʟᴇ:** /settitle Your Title Here
 
-**ᴜsᴇ ᴛʜᴇsᴇ ᴄᴏᴍᴍᴀɴᴅs ᴛᴏ ᴇɴʀɪᴄʜ ʏᴏᴜʀ ᴍᴇᴅɪᴀ ᴡɪᴛʜ ᴀᴅᴅɪᴛɪᴏɴᴀʟ ᴍᴇᴛᴀᴅᴀᴛᴀ ɪɴғᴏʀᴍᴀᴛɪᴏɴ!**
+**ᴜsᴇ ᴛʜᴇsᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴛᴏ ᴇɴʀɪᴄʜ ʏᴏᴜʀ ᴍᴇᴅɪᴀ ᴡɪᴛʜ ᴀᴅᴅɪᴛɪᴏɴᴀʟ ᴍᴇᴛᴀᴅᴀᴛᴀ ɪɴғᴏʀᴍᴀᴛɪᴏɴ!**
 """
 
-    # Premium-specific texts
+    # ----- Premium-specific texts -----
+
     PREMIUM_TXT = f"""
 🌟 **Premium Subscription Plans**
 
 **Monthly Plan:** ${Config.PREMIUM_MONTHLY_PRICE}/month
 • Unlimited file renames
-• Priority processing  
+• Priority processing
 • Advanced features
 • 24/7 support
 
@@ -179,12 +196,14 @@ class Txt(object):
 **Payment Methods:**
 💳 UPI: {Config.ADMIN_UPI_ID}
 💰 PayPal: {Config.ADMIN_PAYPAL}
-🪙 Crypto: Contact admin
+🪙 Crypto: {Config.CRYPTO_WALLET}
+👤 Admin: {Config.ADMIN_CONTACT}
+📢 Support: {Config.SUPPORT_CHANNEL}
 
-After payment, send screenshot to admin for instant activation!
+After payment, send a screenshot to admin for instant activation!
 """
 
-    USAGE_TXT = """
+    USAGE_TXT = f"""
 📊 **Usage Statistics**
 
 **Free Users:**
@@ -231,8 +250,4 @@ Use /premium to upgrade your account!
 
 **Plans:** monthly, yearly
 """
-
-# Jishu Developer 
-# Don't Remove Credit 🥺
-# Telegram Channel @Madflix_Bots
-# Developer @JishuDeveloper
+    
