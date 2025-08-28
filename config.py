@@ -14,11 +14,11 @@ class Config(object):
     PREMIUM_YEARLY_PRICE = float(os.environ.get("PREMIUM_YEARLY_PRICE", "99.99"))
     
     # Payment Configuration - Update these with your actual details
-    ADMIN_UPI_ID = os.environ.get("ADMIN_UPI_ID", "your_actual_upi@paytm")  # Put your real UPI ID here
+    ADMIN_UPI_ID = os.environ.get("ADMIN_UPI_ID", "aryanchoudhary2ty@oksbi")  # Put your real UPI ID here
     ADMIN_PAYPAL = os.environ.get("ADMIN_PAYPAL", "Not Available")  # Since you don't have PayPal
     CRYPTO_WALLET = os.environ.get("CRYPTO_WALLET", "Not Available")  # Since you don't have crypto
-    ADMIN_CONTACT = os.environ.get("ADMIN_CONTACT", "https://t.me/your_username")  # Your actual Telegram
-    SUPPORT_CHANNEL = os.environ.get("SUPPORT_CHANNEL", "https://t.me/your_channel")  # Your channel
+    ADMIN_CONTACT = os.environ.get("ADMIN_CONTACT", "https://t.me/Zenitsu_AF")  # Your actual Telegram
+    SUPPORT_CHANNEL = os.environ.get("SUPPORT_CHANNEL", "https://t.me/the_Reaperss")  # Your channel
 
     # database config
     DB_NAME = os.environ.get("DB_NAME","Autorename")
