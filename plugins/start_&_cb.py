@@ -105,7 +105,7 @@ async def cb_handler(client, query: CallbackQuery):
                 disable_web_page_preview=True,
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("• ʙᴀᴄᴋ", callback_data="help"), 
-                     InlineKeyboardButton("ᴏᴡɴᴇʀ •", url='https://t.me/Animeworld_zone')]
+                     InlineKeyboardButton("ᴏᴡɴᴇʀ •", url='https://t.me/Zenitsu_AF')]
                 ])
             )
         
