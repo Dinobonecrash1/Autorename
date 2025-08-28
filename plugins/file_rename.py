@@ -58,7 +58,7 @@ def premium_check():
                     ])
                     await message.reply_text(
                         f"⚠️ **Warning:** Only {remaining_files} renames left today!\n"
-                        "Upgrade to Premium for unlimited renames! 🚀",
+                        "Ohh Sweetie Upgrade to Premium for unlimited renames! 🚀",
                         reply_markup=keyboard
                     )
             
@@ -405,7 +405,7 @@ async def start_sequence(client, message: Message):
             return
     
     if user_id in active_sequences:
-        await message.reply_text("Hᴇʏ ᴅᴜᴅᴇ...!! A sᴇǫᴜᴇɴᴄᴇ ɪs ᴀʟʀᴇᴀᴅʏ ᴀᴄᴛɪᴠᴇ! Usᴇ /end_sequence ᴛᴏ ᴇɴᴅ ɪᴛ.")
+        await message.reply_text("Hᴇʏ Cutie pie A sᴇǫᴜᴇɴᴄᴇ ɪs ᴀʟʀᴇᴀᴅʏ ᴀᴄᴛɪᴠᴇ! Usᴇ /end_sequence ᴛᴏ ᴇɴᴅ ɪᴛ.")
     else:
         active_sequences[user_id] = []
         message_ids[user_id] = []
@@ -482,7 +482,7 @@ async def auto_rename_files(client, message):
 
     if user_id in active_sequences:
         active_sequences[user_id].append(file_info)
-        reply_msg = await message.reply_text("Wᴇᴡ...ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
+        reply_msg = await message.reply_text("Wait cutie ғɪʟᴇs ʀᴇᴄᴇɪᴠᴇᴅ ɴᴏᴡ ᴜsᴇ /end_sequence ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs...!!")
         message_ids[user_id].append(reply_msg.id)
         return
 
@@ -673,7 +673,7 @@ async def auto_rename_file_concurrent(client, message, file_info):
             media_preference = await Botskingdom.get_media_preference(user_id)
             
             if not format_template:
-                await message.reply_text("Pʟᴇᴀsᴇ Sᴇᴛ Aɴ Aᴜᴛᴏ Rᴇɴᴀᴍᴇ Fᴏʀᴍᴀᴛ Fɪʀsᴛ Usɪɴɢ /autorename")
+                await message.reply_text("Cutie Pʟᴇᴀsᴇ Sᴇᴛ Aɴ Aᴜᴛᴏ Rᴇɴᴀᴍᴇ Fᴏʀᴍᴀᴛ Fɪʀsᴛ Usɪɴɢ /autorename")
                 return
             
             media_type = media_preference
@@ -804,14 +804,14 @@ async def auto_rename_file_concurrent(client, message, file_info):
             
             # Show processing status with premium indicator
             premium_indicator = "🌟" if is_premium else "👤"
-            download_msg = await message.reply_text(f"{premium_indicator} Wᴇᴡ... Iᴀᴍ ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
+            download_msg = await message.reply_text(f"{premium_indicator} Wait cutie Iᴀᴍ ᴅᴏᴡɴʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
             
             ph_path = None
             
             try:
                 path = await concurrent_download(client, message, renamed_file_path, download_msg)
                 
-                await download_msg.edit("Nᴏᴡ ᴀᴅᴅɪɴɢ ᴍᴇᴛᴀᴅᴀᴛᴀ ᴅᴜᴅᴇ...!!")
+                await download_msg.edit("Nᴏᴡ ᴀᴅᴅɪɴɢ ᴍᴇᴛᴀᴅᴀᴛᴀ babe...!!")
                 
                 ffmpeg_cmd = shutil.which('ffmpeg')
                 if not ffmpeg_cmd:
@@ -844,7 +844,7 @@ async def auto_rename_file_concurrent(client, message, file_info):
                 
                 path = metadata_file_path
                 
-                await download_msg.edit("Wᴇᴡ... Iᴀm Uᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
+                await download_msg.edit("Wait cutie Iᴀm Uᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ғɪʟᴇ...!!")
                 
                 c_caption = await Botskingdom.get_caption(message.chat.id)
                 c_thumb = await Botskingdom.get_thumbnail(message.chat.id)
@@ -926,7 +926,7 @@ async def premium_info_callback(client, callback_query):
         text = f'''💰 **Premium Subscription**\n\n**Current Status:** Free User\n**Files renamed today:** {files_today}/{Config.FREE_USER_DAILY_LIMIT}\n**Remaining today:** {remaining}\n\n🌟 **Premium Benefits:**\n• Unlimited file renames\n• Priority processing\n• Advanced features\n• 24/7 support\n\n💳 **Available Plans:**\n• Monthly: $9.99/month\n• Yearly: $99.99/year (Save 17%)'''
         
         keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("💬 Contact Admin", url="https://t.me/your_admin")],
+            [InlineKeyboardButton("💬 Contact Admin", url="https://t.me/Zenitsu_AF")],
             [InlineKeyboardButton("📊 View Usage", callback_data="usage_stats")]
         ])
     
