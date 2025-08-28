@@ -140,7 +140,7 @@ async def cb_handler(client, query: CallbackQuery):
 • `{{quality}}` - Video quality
 • `{{codec}}` - Video codec
 
-**Example:** `[S{{season:02d}}E{{episode:02d}}] {{filename}} [{{quality}}].{{ext}}`
+**Example:** `[AF] Your Anime name S{season} E{episode} {quality} {audio}`
 
 Send your custom format template to change it."""
             
