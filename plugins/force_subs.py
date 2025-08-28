@@ -23,7 +23,7 @@ async def forces_sub(client, message):
     buttons = [
         [InlineKeyboardButton(text="•ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ•", url=f"https://t.me/Animeworld_zone")]
     ]
-    text = "<b>Yᴏᴜ Bᴀᴋᴋᴀᴀ...!! \n<blockquote>Jᴏɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴜsᴇ ᴍʏ\n\nᴏᴛʜᴇʀᴡɪsᴇ Yᴏᴜ ᴀʀᴇ ɪɴ ʙɪɢ sʜɪᴛ...!!</blockquote>\n<blockquote></b>"
+    text = "<b>Ohh Sweetie please \n<blockquote>Jᴏɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴜsᴇ ᴍʏ\n\nᴏᴛʜᴇʀᴡɪsᴇ Yᴏᴜ ᴀʀᴇ ɪɴ ʙɪɢ sʜɪᴛ...!!</blockquote>\n<blockquote></b>"
     try:
         user = await client.get_chat_member(Config.FORCE_SUB, message.from_user.id)
         if user.status == enums.ChatMemberStatus.BANNED:
@@ -38,6 +38,6 @@ async def forces_sub(client, message):
             )
         else:
             await message.reply_text(
-                f"Yᴏᴜ ʙᴀᴋᴋᴀᴀ...!! Jᴏɪɴ ɪᴛ...",
+                f"Ohh sweetie Jᴏɪɴ ɪᴛ...",
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
