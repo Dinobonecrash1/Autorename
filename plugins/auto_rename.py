@@ -30,10 +30,10 @@ async def auto_rename_command(client, message):
 
     # Send confirmation message with the template in monospaced font
     await message.reply_text(
-        f"**🌟 Fantastic! You're ready to auto-rename your files.**\n\n"
+        f"**😘 Good work baby boi You're ready to auto-rename your files.**\n\n"
         "📩 Simply send the file(s) you want to rename.\n\n"
         f"**Your saved template:** `{format_template}`\n\n"
-        "Remember, it might take some time, but I'll ensure your files are renamed perfectly!✨"
+        "Remember that honey, it might take some time, but I'll ensure your files are renamed perfectly!✨"
     )
 
 @Client.on_message(filters.private & filters.command("setmedia"))
