@@ -191,7 +191,7 @@ async def premium_info(client, message: Message):
             InlineKeyboardButton("💳 Monthly Plan", callback_data="buy_monthly"),
             InlineKeyboardButton("💎 Yearly Plan", callback_data="buy_yearly")
         ],
-        [InlineKeyboardButton("❓ Support", url="https://t.me/your_support")]
+        [InlineKeyboardButton("❓ Support", url="https://t.me/Flame_Bots")]
     ])
     
     await message.reply_text(text, reply_markup=keyboard)
@@ -248,14 +248,14 @@ async def handle_premium_purchase(client, callback_query):
 🌟 **Benefits:** Unlimited file renames
 
 **Payment Methods:**
-• UPI: your_upi_id@bank
+• UPI: aryanchoudhary2ty@oksbi
 • PayPal: your_paypal_email
 • Crypto: Contact admin
 
 After payment, send screenshot to admin for activation.'''
     
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("💬 Contact Admin", url="https://t.me/your_admin")],
+        [InlineKeyboardButton("💬 Contact Admin", url="https://t.me/Zenitsu_AF")],
         [InlineKeyboardButton("← Back", callback_data="premium_info")]
     ])
     
@@ -284,7 +284,7 @@ async def premium_info_callback(client, callback_query):
                 InlineKeyboardButton("💳 Monthly Plan", callback_data="buy_monthly"),
                 InlineKeyboardButton("💎 Yearly Plan", callback_data="buy_yearly")
             ],
-            [InlineKeyboardButton("💬 Contact Admin", url="https://t.me/your_admin")]
+            [InlineKeyboardButton("💬 Contact Admin", url="https://t.me/Zenitsu_AF")]
         ])
     
     await callback_query.message.edit_text(text, reply_markup=keyboard)
