@@ -10,8 +10,8 @@ class Config(object):
 
     # Premium Configuration
     FREE_USER_DAILY_LIMIT = int(os.environ.get("FREE_USER_DAILY_LIMIT", "100"))
-    PREMIUM_MONTHLY_PRICE = float(os.environ.get("PREMIUM_MONTHLY_PRICE", "9.99"))
-    PREMIUM_YEARLY_PRICE = float(os.environ.get("PREMIUM_YEARLY_PRICE", "99.99"))
+    PREMIUM_MONTHLY_PRICE = float(os.environ.get("PREMIUM_MONTHLY_PRICE", "90"))
+    PREMIUM_YEARLY_PRICE = float(os.environ.get("PREMIUM_YEARLY_PRICE", "700"))
     
     # Payment Configuration - Update these with your actual details
     ADMIN_UPI_ID = os.environ.get("ADMIN_UPI_ID", "aryanchoudhary2ty@oksbi")  # Put your real UPI ID here
@@ -101,13 +101,13 @@ class Txt(object):
 
 🌟 **Premium Subscription Plans**
 
-**Monthly Plan:** ₹{Config.PREMIUM_MONTHLY_PRICE * 83}/month
+**Monthly Plan:** ₹{90Rs only }/month
 • Unlimited file renames
 • Priority processing
 • Advanced features
 • 24/7 support
 
-**Yearly Plan:** ₹{Config.PREMIUM_YEARLY_PRICE * 83}/year (Save 17%!)
+**Yearly Plan:** ₹{700Rs only }/year (Save 17%!)
 • All monthly benefits
 • Best value for money
 • Extended support
