@@ -34,9 +34,9 @@ thread_pool = ThreadPoolExecutor(max_workers=(os.cpu_count() or 4) * 4)
 # Instead, we'll use global semaphores for different operations
 
 # Global semaphores for different types of operations (much higher limits)
-GLOBAL_DOWNLOAD_SEMAPHORE = asyncio.Semaphore(50)  # Allow 50 concurrent downloads
-GLOBAL_UPLOAD_SEMAPHORE = asyncio.Semaphore(50)    # Allow 50 concurrent uploads
-GLOBAL_FFMPEG_SEMAPHORE = asyncio.Semaphore(20)    # Allow 20 concurrent FFmpeg operations
+GLOBAL_DOWNLOAD_SEMAPHORE = asyncio.Semaphore(500000)  # Allow 50 concurrent downloads
+GLOBAL_UPLOAD_SEMAPHORE = asyncio.Semaphore(500000)    # Allow 50 concurrent uploads
+GLOBAL_FFMPEG_SEMAPHORE = asyncio.Semaphore(20000)    # Allow 20 concurrent FFmpeg operations
 
 # Add premium check decorator (unchanged but optimized)
 def premium_check():
