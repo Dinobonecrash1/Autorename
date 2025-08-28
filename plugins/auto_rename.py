@@ -19,7 +19,7 @@ async def auto_rename_command(client, message):
         await message.reply_text(
             "**Please provide a new name after the command /autorename**\n\n"
             "Here's how to use it:\n"
-            "**Example format:** `mycoolvideo [episode] [quality]`"
+            "**Example format:** `[AF] Your Anime name S{season} E{episode} {quality} {audio}`"
         )
         return
 
