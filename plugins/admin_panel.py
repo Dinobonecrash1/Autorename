@@ -33,7 +33,7 @@ async def tutorial(bot, message):
     await message.reply_text(
         text=Txt.FILE_NAME_TXT.format(format_template=format_template),
         disable_web_page_preview=True,
-        reply_markup=InlineKeyboardMarkup([InlineKeyboardButton("•⚡Main hub•", url="https://t.me/Animeworld_zone")]
+        reply_markup=InlineKeyboardMarkup([InlineKeyboardButton("•⚡ Main Channel•", url="https://t.me/Flame_Bots")]
         )
     )
 
