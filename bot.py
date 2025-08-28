@@ -12,7 +12,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 pyrogram.utils.MIN_CHANNEL_ID = -1003083608382
-SUPPORT_CHAT = os.environ.get("SUPPORT_CHAT", "@timecomenow0")
+SUPPORT_CHAT = os.environ.get("SUPPORT_CHAT", "@the_Reaperss")
 
 class Bot(Client):
     def __init__(self):
@@ -54,7 +54,7 @@ class Bot(Client):
                         f"ɪ ᴅɪᴅɴ'ᴛ sʟᴇᴘᴛ sɪɴᴄᴇ​: `{uptime_string}`"
                     ),
                     reply_markup=InlineKeyboardMarkup(
-                        [[InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇs", url="https://t.me/Animeworld_zone")]]
+                        [[InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇs", url="https://t.me/Flame_Bots")]]
                     )
                 )
             except Exception as e:
