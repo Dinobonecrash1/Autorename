@@ -16,8 +16,8 @@ class Config(object):
     ADMIN_UPI_ID = os.environ.get("ADMIN_UPI_ID", "your_upi@bank")
     ADMIN_PAYPAL = os.environ.get("ADMIN_PAYPAL", "your_paypal@email.com")
     CRYPTO_WALLET = os.environ.get("CRYPTO_WALLET", "your_crypto_wallet_address")
-    ADMIN_CONTACT = os.environ.get("ADMIN_CONTACT", "https://t.me/your_admin")
-    SUPPORT_CHANNEL = os.environ.get("SUPPORT_CHANNEL", "https://t.me/your_support")
+    ADMIN_CONTACT = os.environ.get("ADMIN_CONTACT", "https://t.me/Zenitsu_AF")
+    SUPPORT_CHANNEL = os.environ.get("SUPPORT_CHANNEL", "https://t.me/the_Reaperss")
     
     # database config
     DB_NAME = os.environ.get("DB_NAME","Autorename") 
