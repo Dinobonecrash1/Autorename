@@ -49,19 +49,20 @@ class Txt(object):
     FILE_NAME_TXT = """» sᴇᴛᴜᴘ ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ ғᴏʀᴍᴀᴛ
 
 ᴠᴀʀɪᴀʙʟᴇꜱ :
+➲ season - to replace season number
 ➲ ᴇᴘɪꜱᴏᴅᴇ - ᴛᴏ ʀᴇᴘʟᴀᴄᴇ ᴇᴘɪꜱᴏᴅᴇ ɴᴜᴍʙᴇʀ
 ➲ ǫᴜᴀʟɪᴛʏ - ᴛᴏ ʀᴇᴘʟᴀᴄᴇ ǫᴜᴀʟɪᴛʏ
 
-‣ ꜰᴏʀ ᴇx:- /autorename Your Anime Name Here [S01 - EPepisode - [Quality] [Dual] @Animeworld_zone
+‣ ꜰᴏʀ ᴇx:- /autorename [AF] Your Anime name S{season} E{episode} {quality} {audio}
 
 ‣ /Autorename: ʀᴇɴᴀᴍᴇ ʏᴏᴜʀ ᴍᴇᴅɪᴀ ꜰɪʟᴇꜱ ʙʏ ɪɴᴄʟᴜᴅɪɴɢ 'ᴇᴘɪꜱᴏᴅᴇ' ᴀɴᴅ 'ǫᴜᴀʟɪᴛʏ' ᴠᴀʀɪᴀʙʟᴇꜱ ɪɴ ʏᴏᴜʀ ᴛᴇxᴛ, ᴛᴏ ᴇxᴛʀᴀᴄᴛ ᴇᴘɪꜱᴏᴅᴇ ᴀɴᴅ ǫᴜᴀʟɪᴛʏ ᴘʀᴇꜱᴇɴᴛ ɪɴ ᴛʜᴇ ᴏʀɪɢɪɴᴀʟ ꜰɪʟᴇɴᴀᴍᴇ."""
 
     ABOUT_TXT = f"""❍ ᴍʏ ɴᴀᴍᴇ : ᴀᴜᴛᴏ ʀᴇɴᴀᴍᴇ
-❍ ᴅᴇᴠᴇʟᴏᴩᴇʀ : Bot
+❍ ᴅᴇᴠᴇʟᴏᴩᴇʀ : Chat GPT
 ❍ ʟᴀɴɢᴜᴀɢᴇ : ᴘʏᴛʜᴏɴ
 ❍ ᴅᴀᴛᴀʙᴀꜱᴇ : ᴍᴏɴɢᴏ ᴅʙ
 ❍ ʜᴏꜱᴛᴇᴅ ᴏɴ : error...Not found...
-❍ ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ : ANIME ZONE
+❍ ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ : Flame Bots
 
 🆓 **Free:** 100 files/day
 🌟 **Premium:** Unlimited files
@@ -96,18 +97,24 @@ class Txt(object):
 ⏰️ ETA : {{4}}"""
 
     DONATE_TXT = """
-ᴛʜᴀɴᴋs ғᴏʀ sʜᴏᴡɪɴɢ ɪɴᴛᴇʀᴇsᴛ ɪɴ ᴅᴏɴᴀᴛɪᴏɴ
+ᴛʜᴀɴᴋs ғᴏʀ sʜᴏᴡɪɴɢ ɪɴᴛᴇʀᴇsᴛ ɪɴ Premium
 
-💞 ɪꜰ ʏᴏᴜ ʟɪᴋᴇ ᴏᴜʀ ʙᴏᴛ ꜰᴇᴇʟ ꜰʀᴇᴇ ᴛᴏ ᴅᴏɴᴀᴛᴇ ᴀɴʏ ᴀᴍᴏᴜɴᴛ ₹𝟷𝟶, ₹𝟸𝟶, ₹𝟻𝟶, ₹𝟷𝟶𝟶, ᴇᴛᴄ.
+🌟 **Premium Subscription Plans**
 
-ᴅᴏɴᴀᴛɪᴏɴs ᴀʀᴇ ʀᴇᴀʟʟʏ ᴀᴘᴘʀᴇᴄɪᴀᴛᴇᴅ ɪᴛ ʜᴇʟᴘs ɪɴ ʙᴏᴛ ᴅᴇᴠᴇʟᴏᴘᴍᴇɴᴛ
+**Monthly Plan:** ₹{Config.PREMIUM_MONTHLY_PRICE * 83}/month
+• Unlimited file renames
+• Priority processing
+• Advanced features
+• 24/7 support
 
-ʏᴏᴜ ᴄᴀɴ ᴀʟsᴏ ᴅᴏɴᴀᴛᴇ ᴛʜʀᴏᴜɢʜ ᴜᴘɪ
+**Yearly Plan:** ₹{Config.PREMIUM_YEARLY_PRICE * 83}/year (Save 17%!)
+• All monthly benefits
+• Best value for money
+• Extended support
 
-ᴜᴘɪ ɪᴅ : {Config.ADMIN_UPI_ID}
-
-ɪғ ʏᴏᴜ ᴡɪsʜ ʏᴏᴜ ᴄᴀɴ sᴇɴᴅ ᴜs ss
-ᴏɴ - {Config.ADMIN_CONTACT}"""
+**Payment Method:**
+💳 **UPI:** aryanchoudhary2ty@oksbi
+Please send screenshot to @Zenitsu_AF"""
 
     HELP_TXT = f"""ʜᴇʀᴇ ɪꜱ ʜᴇʟᴘ ᴍᴇɴᴜ ɪᴍᴘᴏʀᴛᴀɴᴛ ᴄᴏᴍᴍᴀɴᴅꜱ:
 
